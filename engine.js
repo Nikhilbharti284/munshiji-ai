@@ -109,7 +109,7 @@ MJ.parseVoice = function (state, whatIf, rawText) {
     if (/(swiggy|zomato|dining|food|delivery|eat)/i.test(lower) && pcts.length) diningCut = Math.min(70, parseInt(pcts[pcts.length - 1], 10) || 0);
     else if (/(shopping|myntra|amazon)/i.test(lower) && pcts.length) shoppingCut = Math.min(70, parseInt(pcts[pcts.length - 1], 10) || 0);
     const rM = cleaned.match(/rent[^0-9+-]*([+-]?\d+(?:,\d+)*)/i);
-    if (rM) { const v = parseInt(rM[1].replace(/,/g, ''), 10) || 0; rentDelta = Math.max(-10000, Math.min(15000, /(down|less|drop|cut)/i.test(lower) ? -v : v)); }
+    if (rM) { const v = parseInt(rM[1].replace(/,/g, ''), 10) || 0; const isNeg = /rent.{0,22}(down|less|drop|cut|lower|decreas|reduc)/i.test(lower) || /-(?=\d)/.test(rM[1]); rentDelta = Math.max(-10000, Math.min(15000, isNeg ? -v : v)); }
     const iM = cleaned.match(/(?:bonus|income|salary|side)[^0-9]*(\d+(?:,\d+)*)/i);
     if (iM) incomeDelta = Math.min(30000, parseInt(iM[1].replace(/,/g, ''), 10) || 0);
     return { intent: 'WHAT_IF_SIMULATION', original, highlightedRaw, cleaned, corrections, params: { diningCut, shoppingCut, rentDelta, incomeDelta }, payload: { intent: 'WHAT_IF_SIMULATION', diningCutPct: diningCut, shoppingCutPct: shoppingCut, rentDeltaINR: rentDelta, incomeDeltaINR: incomeDelta }, summary: 'Updated simulator: Dining -' + diningCut + '%, Rent ' + (rentDelta >= 0 ? '+' : '') + MJ.fmtINR(rentDelta) + '/mo.' };

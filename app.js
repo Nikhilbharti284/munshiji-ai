@@ -111,6 +111,8 @@
     $('monthly-report-body').innerHTML = '<div class="flex justify-between items-center p-4 rounded-2xl bg-teal-50/70 border border-teal-200"><div><div class="text-xs font-bold text-teal-900">Financial Health Score</div><div class="text-xs text-slate-600">Savings rate, emergency runway &amp; subscription hygiene</div></div><div class="text-3xl font-extrabold text-teal-700">' + score + '<span class="text-sm text-slate-400">/100</span></div></div><div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Income<br><b>' + MJ.fmtINR(fin.income) + '</b></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Spend<br><b>' + MJ.fmtINR(fin.totalSpend) + '</b></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Surplus<br><b class="text-teal-700">' + MJ.fmtINR(fin.surplus) + ' (' + fin.savingsRate + '%)</b></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Rules<br><b class="text-slate-900">' + rKeys.length + ' Active</b></div></div>';
     $('memory-activity-log').innerHTML = (state.activityLog || []).map(x => '<div class="flex gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100"><span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-bold text-[10px]">' + MJ.esc(x.badge) + '</span><span class="flex-1 text-slate-700">' + MJ.esc(x.text) + '</span><span class="text-[10px] text-slate-400">' + MJ.esc(x.time) + '</span></div>').join('');
     $('coach-chat-log').innerHTML = state.chatLog.map(m => m.role === 'user' ? '<div class="flex justify-end"><div class="max-w-[85%] px-3 py-2 rounded-2xl bg-slate-900 text-white text-xs">' + MJ.esc(m.text) + '</div></div>' : '<div class="flex justify-start"><div class="max-w-[92%] px-3 py-2 rounded-2xl text-xs ' + (m.type === 'guardrail' ? 'bg-rose-50 border border-rose-300 text-rose-950 font-medium' : 'bg-slate-50 border border-slate-200 text-slate-800') + '">' + MJ.esc(m.text) + '</div></div>').join('');
+    if (MJ.renderCategoryBars) MJ.renderCategoryBars(fin);
+    if (MJ.renderProjectionChart) MJ.renderProjectionChart(state, fin, deltaMo);
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -119,7 +121,7 @@
     const b = $('voice-parse-result'); b.classList.remove('hidden');
     b.innerHTML = '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-[10px] font-bold text-slate-500 uppercase">1. Speech Diff</div><div class="text-slate-800 mt-1">' + p.highlightedRaw + '</div></div><div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-[10px] font-bold text-slate-500 uppercase">2. Extracted JSON</div><pre class="text-[10px] font-mono text-slate-700 whitespace-pre-wrap mt-1">' + MJ.esc(JSON.stringify(p.payload, null, 2)) + '</pre></div><div class="p-3 rounded-xl bg-teal-50 border border-teal-200"><div class="text-[10px] font-bold text-teal-800 uppercase">3. Action Executed</div><div class="text-teal-950 font-semibold mt-1">' + MJ.esc(p.summary) + '</div></div>';
     logAct('VOICE', p.intent + ': ' + p.summary);
-    if (p.intent === 'WHAT_IF_SIMULATION') { Object.assign(whatIf, p.params); MJ.saveState(state); switchTab('whatif'); toast('What-If Simulator updated!'); }
+    if (p.intent === 'WHAT_IF_SIMULATION') { Object.assign(whatIf, p.params); MJ.saveState(state); switchTab('whatif'); toast('What-If Simulator updated!'); if (MJ.speak) MJ.speak(p.summary); }
     else if (p.intent === 'LOG_TRANSACTION') { state.transactions.unshift(p.tx); MJ.saveState(state); switchTab('ingest'); toast('Logged ' + MJ.fmtINR(p.tx.amount)); }
     else { state.chatLog.push({ role: 'user', text: p.original }); const r = await MJ.coachReply(state, p.original); state.chatLog.push({ role: 'coach', type: r.type, text: r.text }); MJ.saveState(state); switchTab('report'); toast(r.type === 'guardrail' ? 'SEBI-Safe Guardrail triggered!' : 'Coach replied!', r.type === 'guardrail' ? 'indigo' : 'normal'); }
   }
@@ -203,7 +205,7 @@
   $('reset-whatif-btn').addEventListener('click', () => { whatIf = { diningCut: 0, shoppingCut: 0, rentDelta: 0, incomeDelta: 0, cancelUnused: false }; renderAll(); });
   $('print-report-btn').addEventListener('click', () => window.print());
   $('export-json-btn').addEventListener('click', () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })); a.download = 'munshiji_ledger.json'; a.click(); });
-  async function askCoach(q) { const t = String(q || '').trim(); if (!t) return; state.chatLog.push({ role: 'user', text: t }); $('coach-input').value = ''; renderAll(); const r = await MJ.coachReply(state, t); state.chatLog.push({ role: 'coach', type: r.type, text: r.text }); MJ.saveState(state); renderAll(); }
+  async function askCoach(q) { const t = String(q || '').trim(); if (!t) return; state.chatLog.push({ role: 'user', text: t }); $('coach-input').value = ''; renderAll(); const r = await MJ.coachReply(state, t); state.chatLog.push({ role: 'coach', type: r.type, text: r.text }); MJ.saveState(state); renderAll(); if (MJ.speak) MJ.speak(r.text); }
   $('coach-send-btn').addEventListener('click', () => askCoach($('coach-input').value));
   $('coach-input').addEventListener('keydown', e => { if (e.key === 'Enter') askCoach(e.target.value); });
   document.querySelectorAll('.coach-quick-btn').forEach(b => b.addEventListener('click', () => askCoach(b.dataset.coachQ)));
@@ -214,5 +216,7 @@
   $('clear-key-btn').addEventListener('click', () => { state.apiKey = ''; $('api-key-input').value = ''; MJ.saveState(state); renderAll(); toast('Running 100% zero-API mode.'); });
   $('reset-demo-btn').addEventListener('click', () => { state = MJ.defaultState(); whatIf = { diningCut: 0, shoppingCut: 0, rentDelta: 0, incomeDelta: 0, cancelUnused: false }; MJ.saveState(state); $('settings-modal').classList.replace('flex', 'hidden'); renderAll(); toast('Demo reset!'); });
 
+  $('tts-toggle-btn').addEventListener('click', () => { MJ.ttsEnabled = !MJ.ttsEnabled; $('tts-toggle-btn').textContent = MJ.ttsEnabled ? 'Voice Reply: ON' : 'Voice Reply: OFF'; $('tts-toggle-btn').className = MJ.ttsEnabled ? 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-teal-700 text-white transition' : 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition'; toast(MJ.ttsEnabled ? 'Voice Read-Aloud ON!' : 'Voice Read-Aloud OFF'); if (MJ.ttsEnabled) MJ.speak('Voice replies enabled. Ask MunshiJi anything.'); });
+  document.querySelectorAll('.stress-btn').forEach(b => b.addEventListener('click', () => { MJ.applyStressTest(b.dataset.stress, whatIf, MJ.computeFinancials(state), state, toast); renderAll(); }));
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();
