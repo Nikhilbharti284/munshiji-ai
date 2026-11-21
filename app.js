@@ -235,5 +235,6 @@
     });
     $('auto-demo-btn').textContent = running ? '■ Stop Demo' : '▶ Auto-Demo';
   });
+  $('ai-audit-btn').addEventListener('click', async () => { $('ai-audit-output').textContent = 'Analyzing ledger...'; const res = await MJ.generateDeepAudit(state); $('ai-audit-output').textContent = '[' + res.source + ']\n' + res.text; if (MJ.speak) MJ.speak(res.text); });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();
