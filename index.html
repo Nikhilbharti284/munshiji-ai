@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MunshiJi AI — Living Money Coach</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-screen ledger-grid antialiased overflow-x-hidden">
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm no-print"></div>
+
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold">Engine &amp; Memory Settings</h3>
+        <button id="close-settings-btn" type="button" class="px-2 py-1 rounded hover:bg-stone-100">✕</button>
+      </div>
+      <p class="text-xs text-stone-600">Works 100% free with zero API keys. Optionally plug in a free Gemini API key for extra Q&amp;A flair.</p>
+      <input id="api-key-input" type="password" placeholder="AIza... (optional)" class="w-full px-3 py-2 text-sm border rounded-xl" />
+      <div class="flex justify-between pt-2 border-t">
+        <button id="reset-demo-btn" type="button" class="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 rounded-xl">Reset Demo</button>
+        <div class="flex gap-2">
+          <button id="clear-key-btn" type="button" class="px-3 py-1.5 text-xs font-bold bg-stone-100 rounded-xl">Clear Key</button>
+          <button id="save-settings-btn" type="button" class="px-4 py-1.5 text-xs font-bold bg-stone-900 text-white rounded-xl">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-stone-200 no-print">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 to-orange-700 text-white flex items-center justify-center font-extrabold">₹</div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold">MunshiJi AI</h1>
+            <span id="engine-badge" class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Zero-API Engine</span>
+          </div>
+          <p class="text-[11px] text-stone-500">India's Voice-First Living Money Coach</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="judge-tour-btn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-stone-950">Judge Demo Tour</button>
+        <button id="open-settings-btn" type="button" class="p-2 rounded-xl border border-stone-200 hover:bg-stone-100"><i data-lucide="settings" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-5 space-y-5">
+    <section id="judge-tour-banner" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 no-print">
+      <div class="flex justify-between items-center mb-2.5">
+        <span class="text-xs font-extrabold">3-Min Judge Demo Walkthrough</span>
+        <button id="close-tour-btn" type="button" class="text-xs text-stone-500">Hide</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+        <button type="button" data-tour-step="1" class="tour-step-btn text-left p-3 rounded-xl bg-white border border-amber-200 hover:border-amber-500 text-xs"><b>1. Voice Diff</b><br><span class="text-stone-500">30% &rarr; wait 40% + What-If</span></button>
+        <button type="button" data-tour-step="2" class="tour-step-btn text-left p-3 rounded-xl bg-white border border-amber-200 hover:border-amber-500 text-xs"><b>2. Living Memory</b><br><span class="text-stone-500">Parse SMS &amp; teach rule</span></button>
+        <button type="button" data-tour-step="3" class="tour-step-btn text-left p-3 rounded-xl bg-white border border-amber-200 hover:border-amber-500 text-xs"><b>3. Leak Radar</b><br><span class="text-stone-500">+18% hike &amp; unused subs</span></button>
+        <button type="button" data-tour-step="4" class="tour-step-btn text-left p-3 rounded-xl bg-white border border-amber-200 hover:border-amber-500 text-xs"><b>4. Guardrail</b><br><span class="text-stone-500">SEBI-safe stock refusal</span></button>
+      </div>
+    </section>
+
+    <section class="bg-gradient-to-br from-stone-900 to-amber-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg no-print">
+      <div class="flex flex-wrap justify-between gap-2 mb-3 text-xs">
+        <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold uppercase">Voice + Wispr Flow Native</span>
+        <span class="text-emerald-300 font-semibold">SEBI-Safe Guardrails Active</span>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <div class="relative flex-1">
+          <input id="voice-command-input" type="text" placeholder="Dictate via Wispr Flow or Mic... e.g. 'Uhh cut Swiggy 30%... wait no 40%, rent +3000'" class="w-full bg-white/10 text-white placeholder-stone-400 text-sm px-4 py-3 pr-11 rounded-xl border border-white/15 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          <button id="mic-btn" type="button" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-amber-500 text-stone-950"><i data-lucide="mic" class="w-4 h-4"></i></button>
+        </div>
+        <button id="run-voice-cmd-btn" type="button" class="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm">Parse &amp; Execute</button>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2 text-[11px]">
+        <button type="button" data-voice-preset="whatif" class="voice-preset-btn px-2.5 py-1 rounded-lg bg-white/10 text-amber-200">"Uhh cut Swiggy 30%... wait no 40% &amp; rent +3000"</button>
+        <button type="button" data-voice-preset="expense" class="voice-preset-btn px-2.5 py-1 rounded-lg bg-white/10 text-emerald-200">"Log 850... actually 650 rupees at Chaayos"</button>
+        <button type="button" data-voice-preset="guardrail" class="voice-preset-btn px-2.5 py-1 rounded-lg bg-white/10 text-rose-200">"Put ₹50,000 in Tata Motors or Bitcoin?"</button>
+      </div>
+      <div id="voice-parse-result" class="hidden mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-xs"></div>
+    </section>
+
+    <nav class="flex gap-1.5 overflow-x-auto pb-1 no-print">
+      <button type="button" data-tab="overview" class="tab-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap">Overview &amp; Nudges</button>
+      <button type="button" data-tab="ingest" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap">Messy Ingest &amp; Rules</button>
+      <button type="button" data-tab="subscriptions" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap">Subscriptions <span id="sub-alert-badge" class="px-1.5 py-0.5 text-[10px] rounded-full bg-red-600 text-white">0</span></button>
+      <button type="button" data-tab="whatif" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap">Profile &amp; What-If</button>
+      <button type="button" data-tab="report" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap">Report &amp; Guardrails</button>
+    </nav>
+
+    <section id="tab-overview" class="tab-panel space-y-5">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-2xl p-4 border"><div class="text-xs text-stone-500 font-semibold">Monthly Income</div><div id="kpi-income" class="text-xl sm:text-2xl font-extrabold">₹0</div></div>
+        <div class="bg-white rounded-2xl p-4 border"><div class="text-xs text-stone-500 font-semibold">This Month Spend</div><div id="kpi-spend" class="text-xl sm:text-2xl font-extrabold">₹0</div><div id="kpi-spend-sub" class="text-[11px] text-stone-500"></div></div>
+        <div class="bg-white rounded-2xl p-4 border"><div class="text-xs text-stone-500 font-semibold">Monthly Surplus</div><div id="kpi-surplus" class="text-xl sm:text-2xl font-extrabold">₹0</div><div id="kpi-savings-rate" class="text-[11px] text-stone-500"></div></div>
+        <div class="bg-white rounded-2xl p-4 border"><div class="text-xs text-stone-500 font-semibold">Emergency Runway</div><div id="kpi-runway" class="text-xl sm:text-2xl font-extrabold text-amber-700">0 mo</div><div class="w-full bg-stone-100 h-1.5 rounded-full mt-2"><div id="kpi-runway-bar" class="bg-amber-500 h-full rounded-full" style="width:0%"></div></div></div>
+      </div>
+      <div class="bg-amber-50/70 rounded-2xl p-4 border border-amber-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div><span class="px-2 py-0.5 rounded bg-amber-600 text-white text-[10px] font-bold uppercase">Rupee Leak X-Ray</span><p id="xray-summary" class="text-xs sm:text-sm text-stone-700 mt-1"></p></div>
+        <div class="flex items-center gap-3 shrink-0"><div class="px-3 py-1.5 rounded-xl bg-white border text-center"><div class="text-[10px] text-stone-500">Recoverable</div><div id="xray-annual-leak" class="font-extrabold text-emerald-700">₹0</div></div><button id="xray-fix-btn" type="button" class="px-3.5 py-2 rounded-xl bg-stone-900 text-white text-xs font-bold">Simulate &rarr;</button></div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border space-y-3">
+        <div class="flex justify-between items-center"><h2 class="text-sm font-bold">Live Spending Drift Nudges</h2><span id="learned-rules-pill" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700">0 Learned Rules</span></div>
+        <div id="nudges-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl p-4 border"><h3 class="text-sm font-bold mb-2">Category Spending</h3><div class="relative h-64"><canvas id="category-chart"></canvas></div></div>
+        <div class="bg-white rounded-2xl p-4 border"><h3 class="text-sm font-bold mb-2">Cashflow Split</h3><div class="relative h-64"><canvas id="cashflow-chart"></canvas></div></div>
+      </div>
+    </section>
+
+    <section id="tab-ingest" class="tab-panel hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2 bg-white rounded-2xl p-4 border space-y-3">
+          <div class="flex justify-between items-center"><h2 class="text-sm font-bold">Messy PDF / CSV / UPI SMS Ingest</h2><button id="load-sample-sms-btn" type="button" class="px-3 py-1 rounded-xl text-xs font-semibold bg-amber-100 text-amber-900">+ Paste Sample SMS</button></div>
+          <textarea id="messy-input" rows="4" placeholder="Paste HDFC/SBI/UPI SMS, CSV rows, or upload a text-based PDF..." class="w-full p-3 text-xs font-mono bg-stone-50 border rounded-xl"></textarea>
+          <div class="flex flex-wrap justify-between gap-2">
+            <label class="px-3 py-2 rounded-xl text-xs font-semibold bg-stone-100 cursor-pointer">Upload PDF / CSV / TXT<input id="csv-file-input" type="file" accept=".pdf,.csv,.txt" class="hidden" /></label>
+            <button id="parse-ingest-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-stone-900 text-white">Parse &amp; Auto-Categorize</button>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border space-y-2">
+          <div class="flex justify-between items-center"><h3 class="text-sm font-bold">Learned Merchant Memory</h3><span id="rules-count-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">0</span></div>
+          <div id="learned-rules-list" class="space-y-2 max-h-52 overflow-y-auto"></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border space-y-3">
+        <div class="flex flex-wrap justify-between gap-2"><h3 class="text-sm font-bold">Living Ledger (Edit Category to Teach Rule)</h3><div class="flex gap-2"><input id="ledger-search" type="text" placeholder="Search..." class="px-3 py-1 text-xs border rounded-xl" /><select id="ledger-cat-filter" class="px-3 py-1 text-xs border rounded-xl bg-white"><option value="ALL">All Categories</option></select></div></div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr class="border-b text-stone-500"><th class="py-2">Date</th><th>Merchant</th><th>Source</th><th>Category</th><th class="text-right">Amount</th></tr></thead><tbody id="ledger-tbody" class="divide-y"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="tab-subscriptions" class="tab-panel hidden space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-white rounded-2xl p-4 border"><div class="text-xs text-stone-500">Monthly Recurring</div><div id="sub-total-monthly" class="text-2xl font-extrabold">₹0</div></div>
+        <div class="bg-red-50/40 rounded-2xl p-4 border border-red-200"><div class="text-xs text-red-700">Price Hikes &amp; Unused</div><div id="sub-alerts-count" class="text-2xl font-extrabold text-red-700">0</div></div>
+        <div class="bg-emerald-50/40 rounded-2xl p-4 border border-emerald-200"><div class="text-xs text-emerald-700">Potential Annual Savings</div><div id="sub-annual-savings" class="text-2xl font-extrabold text-emerald-700">₹0/yr</div></div>
+      </div>
+      <div id="subscriptions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </section>
+
+    <section id="tab-whatif" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-5 bg-white rounded-2xl p-4 border space-y-3">
+        <h2 class="text-sm font-bold">Persistent Living Profile</h2>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <label>Income (₹)<input id="prof-income" type="number" class="w-full mt-1 px-2.5 py-1.5 border rounded-lg" /></label>
+          <label>Rent &amp; Bills (₹)<input id="prof-rent" type="number" class="w-full mt-1 px-2.5 py-1.5 border rounded-lg" /></label>
+          <label>EMIs &amp; Family (₹)<input id="prof-emi" type="number" class="w-full mt-1 px-2.5 py-1.5 border rounded-lg" /></label>
+          <label>Emergency Fund (₹)<input id="prof-emergency" type="number" class="w-full mt-1 px-2.5 py-1.5 border rounded-lg" /></label>
+        </div>
+        <div id="goals-editor-list" class="space-y-2"></div>
+        <div class="grid grid-cols-12 gap-1.5"><input id="new-goal-name" placeholder="Goal" class="col-span-5 px-2 py-1.5 text-xs border rounded-lg" /><input id="new-goal-target" type="number" placeholder="Target ₹" class="col-span-3 px-2 py-1.5 text-xs border rounded-lg" /><input id="new-goal-date" type="month" class="col-span-4 px-2 py-1.5 text-xs border rounded-lg" /></div>
+        <button id="add-goal-btn" type="button" class="w-full py-2 rounded-xl text-xs font-bold bg-stone-100">+ Add Goal</button>
+      </div>
+      <div class="lg:col-span-7 bg-white rounded-2xl p-4 border space-y-3">
+        <div class="flex justify-between items-center"><h2 class="text-sm font-bold">What-If Goal Simulator</h2><button id="reset-whatif-btn" type="button" class="px-2.5 py-1 text-xs rounded-lg bg-stone-100">Reset</button></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-stone-50 p-3 rounded-xl text-xs">
+          <div><div class="flex justify-between"><span>Cut Dining</span><b id="val-dining-cut">0%</b></div><input id="sim-dining-cut" type="range" min="0" max="70" step="5" value="0" class="w-full" /></div>
+          <div><div class="flex justify-between"><span>Cut Shopping</span><b id="val-shopping-cut">0%</b></div><input id="sim-shopping-cut" type="range" min="0" max="70" step="5" value="0" class="w-full" /></div>
+          <div><div class="flex justify-between"><span>Rent Change</span><b id="val-rent-delta">₹0</b></div><input id="sim-rent-delta" type="range" min="-10000" max="15000" step="500" value="0" class="w-full" /></div>
+          <div><div class="flex justify-between"><span>Side Income</span><b id="val-income-delta">+₹0</b></div><input id="sim-income-delta" type="range" min="0" max="30000" step="1000" value="0" class="w-full" /></div>
+          <label class="sm:col-span-2 flex items-center gap-2 font-semibold"><input id="sim-cancel-unused" type="checkbox" /> Cancel unused subscriptions (+<span id="sim-unused-amt">₹0</span>/mo)</label>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="p-2.5 rounded-xl bg-stone-50 border">Current<br><b id="sim-base-surplus">₹0</b></div>
+          <div class="p-2.5 rounded-xl bg-emerald-50 border">Simulated<br><b id="sim-new-surplus">₹0</b></div>
+          <div class="p-2.5 rounded-xl bg-amber-50 border">Delta<br><b id="sim-delta-surplus">₹0</b></div>
+        </div>
+        <div id="goal-impact-list" class="space-y-2"></div>
+        <div class="relative h-56"><canvas id="goal-sim-chart"></canvas></div>
+      </div>
+    </section>
+
+    <section id="tab-report" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-7 bg-white rounded-2xl p-4 border space-y-3">
+        <div class="flex justify-between items-center border-b pb-2"><h2 class="text-base font-extrabold">November 2026 Money Health Report</h2><div class="flex gap-2 no-print"><button id="export-json-btn" type="button" class="px-3 py-1 rounded-xl text-xs font-semibold bg-stone-100">Export JSON</button><button id="print-report-btn" type="button" class="px-3 py-1 rounded-xl text-xs font-semibold bg-stone-900 text-white">Print / PDF</button></div></div>
+        <div id="monthly-report-body" class="space-y-3"></div>
+        <div class="pt-2 border-t"><h3 class="text-xs font-bold uppercase text-stone-500 mb-1.5">Living Memory &amp; Guardrail Log</h3><div id="memory-activity-log" class="space-y-1.5 text-xs max-h-40 overflow-y-auto"></div></div>
+      </div>
+      <div class="lg:col-span-5 bg-white rounded-2xl p-4 border flex flex-col no-print space-y-2.5">
+        <div class="flex justify-between items-center"><h2 class="text-sm font-bold">MunshiJi Coach &amp; Guardrails</h2><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">No Security Tips</span></div>
+        <div id="coach-chat-log" class="flex-1 space-y-2 overflow-y-auto max-h-72"></div>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" data-coach-q="Should I invest ₹50,000 in Tata Motors or Bitcoin?" class="coach-quick-btn text-[11px] px-2 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200">Test Guardrail: Buy Tata Motors?</button>
+          <button type="button" data-coach-q="How much emergency fund do I need?" class="coach-quick-btn text-[11px] px-2 py-1 rounded-lg bg-stone-100">Emergency Fund?</button>
+        </div>
+        <div class="flex gap-2"><input id="coach-input" type="text" placeholder="Ask MunshiJi or test guardrail..." class="flex-1 px-3 py-2 text-xs border rounded-xl" /><button id="coach-send-btn" type="button" class="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold">Ask</button></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

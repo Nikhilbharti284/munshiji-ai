@@ -1,0 +1,8 @@
+body { font-family: 'Inter', system-ui, sans-serif; background: #FAF7F2; color: #1C1917; }
+.ledger-grid { background-image: radial-gradient(#E5DDD0 1px, transparent 1px); background-size: 20px 20px; }
+.tab-btn.active { background: #1C1917; color: #FAF7F2; box-shadow: 0 2px 8px rgba(28,25,23,.18); }
+.pulse-mic { animation: micPulse 1.4s infinite; }
+@keyframes micPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.5); } 50% { box-shadow: 0 0 0 10px rgba(220,38,38,0); } }
+.token-filler { text-decoration: line-through; color: #FCA5A5; opacity: .85; }
+.token-corrected { background: rgba(16,185,129,.25); color: #A7F3D0; padding: 0 4px; border-radius: 4px; font-weight: 700; }
+@media print { .no-print { display: none !important; } body { background: #FFF !important; } }
