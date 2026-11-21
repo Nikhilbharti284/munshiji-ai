@@ -4,13 +4,14 @@
   let whatIf = { diningCut: 0, shoppingCut: 0, rentDelta: 0, incomeDelta: 0, cancelUnused: false };
   let charts = { cat: null, cf: null, sim: null };
   const $ = id => document.getElementById(id);
+  const TITLES = { overview: 'Overview', ingest: 'Ingest & Learned Rules', subscriptions: 'Subscriptions Radar', whatif: 'Profile & What-If Simulator', report: 'Monthly Report & Coach' };
 
   function toast(msg, tone) {
     const c = $('toast-container'); if (!c) return;
     const el = document.createElement('div');
-    el.className = (tone === 'error' ? 'bg-red-700 text-white' : tone === 'indigo' ? 'bg-indigo-700 text-white' : 'bg-stone-900 text-amber-50') + ' px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold';
+    el.className = (tone === 'error' ? 'bg-rose-600 text-white' : tone === 'indigo' ? 'bg-teal-700 text-white' : 'bg-slate-900 text-white') + ' px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold';
     el.textContent = msg; c.appendChild(el);
-    setTimeout(() => el.remove(), 3200);
+    setTimeout(() => el.remove(), 3000);
   }
   function logAct(badge, text) {
     state.activityLog = state.activityLog || [];
@@ -18,15 +19,20 @@
     if (state.activityLog.length > 20) state.activityLog.pop();
   }
   function switchTab(t) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+    if (!TITLES[t]) t = 'overview';
+    if (location.hash !== '#/' + t) history.replaceState(null, '', '#/' + t);
+    $('page-title').textContent = TITLES[t];
+    document.querySelectorAll('.nav-item, .mob-nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + t));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     renderAll();
   }
 
   function renderAll() {
     const fin = MJ.computeFinancials(state), subs = MJ.detectSubs(state);
-    $('engine-badge').innerHTML = state.apiKey ? '<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Zero-API + Gemini' : '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Zero-API Engine';
-    $('sub-alert-badge').textContent = String(subs.filter(s => s.hike > 0 || s.status === 'unused').length);
+    $('engine-badge').innerHTML = state.apiKey ? '<span class="w-2 h-2 rounded-full bg-indigo-500"></span> Zero-API + Gemini' : '<span class="w-2 h-2 rounded-full bg-teal-600"></span> Zero-API Engine';
+    const alertCnt = String(subs.filter(s => s.hike > 0 || s.status === 'unused').length);
+    $('sub-alert-badge').textContent = alertCnt; $('mob-sub-badge').textContent = alertCnt;
     const rKeys = Object.keys(state.learnedRules || {});
     $('learned-rules-pill').textContent = rKeys.length + ' Learned Rule' + (rKeys.length === 1 ? '' : 's');
 
@@ -34,7 +40,7 @@
     $('kpi-spend').textContent = MJ.fmtINR(fin.totalSpend);
     $('kpi-spend-sub').textContent = 'Fixed ' + MJ.fmtINR(fin.fixed) + ' + Var ' + MJ.fmtINR(fin.variableTotal);
     $('kpi-surplus').textContent = MJ.fmtINR(fin.surplus);
-    $('kpi-surplus').className = 'text-xl sm:text-2xl font-extrabold ' + (fin.surplus >= 0 ? 'text-emerald-700' : 'text-red-700');
+    $('kpi-surplus').className = 'text-xl sm:text-2xl font-extrabold mt-1 ' + (fin.surplus >= 0 ? 'text-teal-700' : 'text-rose-600');
     $('kpi-savings-rate').textContent = 'Savings Rate: ' + fin.savingsRate + '%';
     $('kpi-runway').textContent = fin.runwayMonths + ' / ' + state.profile.targetEmergencyMonths + ' mo';
     $('kpi-runway-bar').style.width = Math.min(100, Math.round((fin.runwayMonths / Math.max(1, state.profile.targetEmergencyMonths)) * 100)) + '%';
@@ -42,41 +48,41 @@
     const unusedMo = subs.filter(s => s.status === 'unused').reduce((a, s) => a + s.latestAmt, 0);
     const dinTrim = Math.round((fin.byCat['Dining & Delivery'] || 0) * 0.3);
     $('xray-annual-leak').textContent = MJ.fmtINR((unusedMo + dinTrim) * 12) + '/yr';
-    $('xray-summary').textContent = 'Cancelling ' + subs.filter(s => s.status === 'unused').length + ' unused subs (' + MJ.fmtINR(unusedMo) + '/mo) + 30% Dining trim (' + MJ.fmtINR(dinTrim) + '/mo) recovers ' + MJ.fmtINR((unusedMo + dinTrim) * 12) + '/yr.';
+    $('xray-summary').textContent = 'Cancelling ' + subs.filter(s => s.status === 'unused').length + ' unused subs (' + MJ.fmtINR(unusedMo) + '/mo) + 30% Dining trim (' + MJ.fmtINR(dinTrim) + '/mo) recovers ' + MJ.fmtINR((unusedMo + dinTrim) * 12) + ' per year.';
 
     const nudges = [];
     Object.keys(MJ.BUDGETS).forEach(cat => {
       const sp = fin.byCat[cat] || 0, cap = MJ.BUDGETS[cat], r = sp / cap;
-      if (r >= 0.78) nudges.push({ tone: r >= 1 ? 'red' : 'amber', title: cat + ' Drift (' + Math.round(r * 100) + '% of cap)', msg: 'Spent ' + MJ.fmtINR(sp) + ' / ' + MJ.fmtINR(cap) + ' guideline this month.', act: cat === 'Subscriptions & OTT' ? 'goto-subs' : (cat === 'Shopping & Lifestyle' ? 'sim-shopping' : 'sim-dining'), lbl: cat === 'Subscriptions & OTT' ? 'Review Subs' : 'Simulate 30% Cut' });
+      if (r >= 0.78) nudges.push({ tone: r >= 1 ? 'red' : 'amber', title: cat + ' (' + Math.round(r * 100) + '% of cap)', msg: 'Spent ' + MJ.fmtINR(sp) + ' / ' + MJ.fmtINR(cap) + ' monthly guideline.', act: cat === 'Subscriptions & OTT' ? 'goto-subs' : (cat === 'Shopping & Lifestyle' ? 'sim-shopping' : 'sim-dining'), lbl: cat === 'Subscriptions & OTT' ? 'Review Subs' : 'Simulate 30% Cut' });
     });
     const hikes = subs.filter(s => s.hike > 0);
-    if (hikes.length) nudges.push({ tone: 'red', title: 'Price Hike Detected', msg: hikes[0].merchant + ' jumped ' + MJ.fmtINR(hikes[0].prevAmt) + ' -> ' + MJ.fmtINR(hikes[0].latestAmt) + ' (+' + hikes[0].hike + '% MoM).', act: 'goto-subs', lbl: 'Inspect Subs' });
+    if (hikes.length) nudges.push({ tone: 'red', title: 'Price Hike Caught', msg: hikes[0].merchant + ' rose ' + MJ.fmtINR(hikes[0].prevAmt) + ' -> ' + MJ.fmtINR(hikes[0].latestAmt) + ' (+' + hikes[0].hike + '% MoM).', act: 'goto-subs', lbl: 'Inspect Subs' });
     const uncat = fin.curTx.filter(t => t.category === 'Transfers & Uncategorized');
-    if (uncat.length) nudges.push({ tone: 'indigo', title: uncat.length + ' Uncategorized UPI Tx', msg: uncat[0].merchant + ' (' + MJ.fmtINR(uncat[0].amount) + ') needs a category. Fix once to teach a rule.', act: 'goto-ingest', lbl: 'Teach Rule' });
-    $('nudges-list').innerHTML = nudges.map(n => '<div class="p-3.5 rounded-xl border ' + (n.tone === 'red' ? 'bg-red-50 border-red-200' : n.tone === 'indigo' ? 'bg-indigo-50 border-indigo-200' : 'bg-amber-50 border-amber-200') + ' flex flex-col justify-between gap-2"><div><div class="text-xs font-bold text-stone-900">' + MJ.esc(n.title) + '</div><p class="text-xs text-stone-700 mt-1">' + MJ.esc(n.msg) + '</p></div><button type="button" data-nudge="' + n.act + '" class="nudge-btn self-start px-2.5 py-1 rounded-lg bg-white text-stone-900 text-[11px] font-bold border border-stone-300">' + n.lbl + ' &rarr;</button></div>').join('');
+    if (uncat.length) nudges.push({ tone: 'teal', title: uncat.length + ' Uncategorized UPI Tx', msg: uncat[0].merchant + ' (' + MJ.fmtINR(uncat[0].amount) + ') needs a category. Fix once to teach.', act: 'goto-ingest', lbl: 'Teach Rule' });
+    $('nudges-list').innerHTML = nudges.map(n => '<div class="p-3.5 rounded-xl border ' + (n.tone === 'red' ? 'bg-rose-50/50 border-rose-200' : n.tone === 'teal' ? 'bg-teal-50/50 border-teal-200' : 'bg-amber-50/50 border-amber-200') + ' flex flex-col justify-between gap-2"><div><div class="text-xs font-bold text-slate-900">' + MJ.esc(n.title) + '</div><p class="text-xs text-slate-600 mt-1">' + MJ.esc(n.msg) + '</p></div><button type="button" data-nudge="' + n.act + '" class="nudge-btn self-start px-2.5 py-1 rounded-lg bg-white text-slate-800 text-[11px] font-semibold border border-slate-200 hover:bg-slate-50">' + n.lbl + ' &rarr;</button></div>').join('');
 
     if (window.Chart) {
       const cL = Object.keys(fin.byCat).filter(k => fin.byCat[k] > 0), cV = cL.map(k => fin.byCat[k]);
       if (charts.cat) charts.cat.destroy();
-      charts.cat = new Chart($('category-chart'), { type: 'doughnut', data: { labels: cL, datasets: [{ data: cV, backgroundColor: ['#EA580C','#059669','#4F46E5','#D97706','#0284C7','#DB2777','#65A30D','#78716C'], borderWidth: 2, borderColor: '#FFF' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } } } });
+      charts.cat = new Chart($('category-chart'), { type: 'doughnut', data: { labels: cL, datasets: [{ data: cV, backgroundColor: ['#0F766E','#0284C7','#D97706','#E11D48','#4F46E5','#10B981','#64748B'], borderWidth: 2, borderColor: '#FFF' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } } } });
       if (charts.cf) charts.cf.destroy();
-      charts.cf = new Chart($('cashflow-chart'), { type: 'bar', data: { labels: ['Income','Fixed','Variable','Surplus'], datasets: [{ data: [fin.income, fin.fixed, fin.variableTotal, Math.max(0, fin.surplus)], backgroundColor: ['#1C1917','#D97706','#EA580C','#059669'], borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+      charts.cf = new Chart($('cashflow-chart'), { type: 'bar', data: { labels: ['Income','Fixed','Variable','Surplus'], datasets: [{ data: [fin.income, fin.fixed, fin.variableTotal, Math.max(0, fin.surplus)], backgroundColor: ['#0F172A','#64748B','#D97706','#0F766E'], borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
     }
 
     const selF = $('ledger-cat-filter');
     if (selF.options.length <= 1) MJ.CATEGORIES.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; selF.appendChild(o); });
     $('rules-count-badge').textContent = String(rKeys.length);
-    $('learned-rules-list').innerHTML = rKeys.length ? rKeys.map(k => '<div class="flex items-center justify-between p-2 rounded-xl bg-indigo-50 border border-indigo-100 text-xs"><div><div class="font-bold">' + MJ.esc(k) + '</div><div class="text-[11px] text-indigo-700">&rarr; ' + MJ.esc(state.learnedRules[k]) + '</div></div><button type="button" data-del-rule="' + MJ.esc(k) + '" class="del-rule-btn text-stone-500 px-1.5">✕</button></div>').join('') : '<div class="text-xs text-stone-400 italic">Edit any category below to teach MunshiJi.</div>';
+    $('learned-rules-list').innerHTML = rKeys.length ? rKeys.map(k => '<div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs"><div><div class="font-bold text-slate-900">' + MJ.esc(k) + '</div><div class="text-[11px] text-teal-700">&rarr; ' + MJ.esc(state.learnedRules[k]) + '</div></div><button type="button" data-del-rule="' + MJ.esc(k) + '" class="del-rule-btn text-slate-400 hover:text-rose-600 px-1.5">✕</button></div>').join('') : '<div class="text-xs text-slate-400 italic">Edit any category below to teach MunshiJi.</div>';
     const sq = ($('ledger-search').value || '').toLowerCase(), cf = selF.value;
-    $('ledger-tbody').innerHTML = state.transactions.filter(t => (cf === 'ALL' || t.category === cf) && (!sq || t.merchant.toLowerCase().includes(sq))).sort((a, b) => b.date.localeCompare(a.date)).map(t => '<tr><td class="py-2 pr-3 text-stone-500 whitespace-nowrap">' + MJ.esc(t.date) + '</td><td class="py-2 pr-3"><div class="font-semibold">' + MJ.esc(t.merchant) + '</div><div class="text-[10px] text-stone-400 truncate max-w-[160px]">' + MJ.esc(t.raw) + '</div></td><td class="py-2 pr-3"><span class="px-2 py-0.5 rounded bg-stone-100 text-[10px] font-semibold">' + MJ.esc(t.source) + '</span></td><td class="py-2 pr-3"><select data-tx-id="' + MJ.esc(t.id) + '" class="tx-cat-select text-xs px-2 py-1 rounded-lg border border-stone-200">' + MJ.CATEGORIES.map(c => '<option value="' + c + '"' + (c === t.category ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></td><td class="py-2 text-right font-bold whitespace-nowrap">' + MJ.fmtINR(t.amount) + '</td></tr>').join('');
+    $('ledger-tbody').innerHTML = state.transactions.filter(t => (cf === 'ALL' || t.category === cf) && (!sq || t.merchant.toLowerCase().includes(sq))).sort((a, b) => b.date.localeCompare(a.date)).map(t => '<tr><td class="py-2.5 pr-3 text-slate-500 whitespace-nowrap">' + MJ.esc(t.date) + '</td><td class="py-2.5 pr-3"><div class="font-semibold text-slate-900">' + MJ.esc(t.merchant) + '</div><div class="text-[10px] text-slate-400 truncate max-w-[160px]">' + MJ.esc(t.raw) + '</div></td><td class="py-2.5 pr-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium">' + MJ.esc(t.source) + '</span></td><td class="py-2.5 pr-3"><select data-tx-id="' + MJ.esc(t.id) + '" class="tx-cat-select text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white">' + MJ.CATEGORIES.map(c => '<option value="' + c + '"' + (c === t.category ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></td><td class="py-2.5 text-right font-bold text-slate-900 whitespace-nowrap">' + MJ.fmtINR(t.amount) + '</td></tr>').join('');
 
     $('sub-total-monthly').textContent = MJ.fmtINR(subs.reduce((a, s) => a + s.latestAmt, 0));
-    $('sub-alerts-count').textContent = String(subs.filter(s => s.hike > 0 || s.status === 'unused').length);
+    $('sub-alerts-count').textContent = alertCnt;
     $('sub-annual-savings').textContent = MJ.fmtINR(unusedMo * 12) + '/yr';
-    $('subscriptions-grid').innerHTML = subs.map(s => '<div class="p-4 rounded-2xl border ' + (s.hike > 0 ? 'border-red-300 bg-red-50/30' : s.status === 'unused' ? 'border-amber-300 bg-amber-50/30' : 'border-stone-200 bg-white') + ' flex flex-col justify-between gap-2"><div class="flex justify-between"><div><div class="font-bold text-sm">' + MJ.esc(s.merchant) + '</div><div class="text-[11px] text-stone-500">' + MJ.esc(s.category) + '</div></div><div class="text-right"><div class="font-extrabold">' + MJ.fmtINR(s.latestAmt) + '/mo</div>' + (s.hike > 0 ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">+' + s.hike + '% MoM</span>' : '<span class="text-[10px] text-stone-400">Stable</span>') + '</div></div><div class="flex justify-between items-center pt-2 border-t border-stone-200/60"><span class="text-[11px] font-semibold ' + (s.status === 'unused' ? 'text-amber-800' : 'text-emerald-700') + '">' + (s.status === 'unused' ? 'Unused — Save ' + MJ.fmtINR(s.latestAmt * 12) + '/yr' : 'Active') + '</span><button type="button" data-sub-key="' + MJ.esc(s.key) + '" class="toggle-sub-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-stone-900 text-white">' + (s.status === 'unused' ? 'Mark Active' : 'Flag Unused') + '</button></div></div>').join('');
+    $('subscriptions-grid').innerHTML = subs.map(s => '<div class="p-4 rounded-2xl border ' + (s.hike > 0 ? 'border-rose-200 bg-rose-50/30' : s.status === 'unused' ? 'border-amber-200 bg-amber-50/30' : 'border-slate-200 bg-white') + ' flex flex-col justify-between gap-2"><div class="flex justify-between"><div><div class="font-bold text-sm text-slate-900">' + MJ.esc(s.merchant) + '</div><div class="text-[11px] text-slate-500">' + MJ.esc(s.category) + '</div></div><div class="text-right"><div class="font-extrabold">' + MJ.fmtINR(s.latestAmt) + '/mo</div>' + (s.hike > 0 ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">+' + s.hike + '% MoM</span>' : '<span class="text-[10px] text-slate-400">Stable</span>') + '</div></div><div class="flex justify-between items-center pt-2 border-t border-slate-100"><span class="text-[11px] font-semibold ' + (s.status === 'unused' ? 'text-amber-800' : 'text-teal-700') + '">' + (s.status === 'unused' ? 'Unused — Save ' + MJ.fmtINR(s.latestAmt * 12) + '/yr' : 'Active') + '</span><button type="button" data-sub-key="' + MJ.esc(s.key) + '" class="toggle-sub-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 text-white">' + (s.status === 'unused' ? 'Mark Active' : 'Flag Unused') + '</button></div></div>').join('');
 
     [['prof-income', state.profile.income], ['prof-rent', state.profile.rent], ['prof-emi', state.profile.emi], ['prof-emergency', state.profile.emergencyFund]].forEach(([id, v]) => { if (document.activeElement !== $(id)) $(id).value = v; });
-    $('goals-editor-list').innerHTML = state.goals.map(g => '<div class="flex justify-between items-center p-2 rounded-xl bg-stone-50 border border-stone-200 text-xs"><div><div class="font-bold">' + MJ.esc(g.name) + '</div><div class="text-[11px] text-stone-500">Target ' + MJ.fmtINR(g.target) + ' &bull; By ' + MJ.esc(g.targetDate) + '</div></div><button type="button" data-del-goal="' + MJ.esc(g.id) + '" class="del-goal-btn text-stone-400 hover:text-red-600 px-1.5">✕</button></div>').join('');
+    $('goals-editor-list').innerHTML = state.goals.map(g => '<div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs"><div><div class="font-bold text-slate-900">' + MJ.esc(g.name) + '</div><div class="text-[11px] text-slate-500">Target ' + MJ.fmtINR(g.target) + ' &bull; By ' + MJ.esc(g.targetDate) + '</div></div><button type="button" data-del-goal="' + MJ.esc(g.id) + '" class="del-goal-btn text-slate-400 hover:text-rose-600 px-1.5">✕</button></div>').join('');
     $('sim-unused-amt').textContent = MJ.fmtINR(unusedMo);
     $('sim-dining-cut').value = whatIf.diningCut; $('val-dining-cut').textContent = whatIf.diningCut + '%';
     $('sim-shopping-cut').value = whatIf.shoppingCut; $('val-shopping-cut').textContent = whatIf.shoppingCut + '%';
@@ -86,8 +92,7 @@
 
     const deltaMo = Math.round((fin.byCat['Dining & Delivery'] || 0) * whatIf.diningCut / 100) + Math.round((fin.byCat['Shopping & Lifestyle'] || 0) * whatIf.shoppingCut / 100) + (whatIf.cancelUnused ? unusedMo : 0) + whatIf.incomeDelta - whatIf.rentDelta;
     const baseS = Math.max(1000, fin.surplus), simS = Math.max(1000, fin.surplus + deltaMo);
-    $('sim-base-surplus').textContent = MJ.fmtINR(fin.surplus);
-    $('sim-new-surplus').textContent = MJ.fmtINR(fin.surplus + deltaMo);
+    $('sim-base-surplus').textContent = MJ.fmtINR(fin.surplus); $('sim-new-surplus').textContent = MJ.fmtINR(fin.surplus + deltaMo);
     $('sim-delta-surplus').textContent = (deltaMo >= 0 ? '+' : '') + MJ.fmtINR(deltaMo) + '/mo';
 
     const gN = [], gB = [], gS = [];
@@ -95,40 +100,51 @@
       const rem = Math.max(0, (Number(g.target) || 0) - (Number(g.saved) || 0));
       const bM = Number((rem / Math.max(1000, baseS * 0.5)).toFixed(1)), sM = Number((rem / Math.max(1000, simS * 0.5)).toFixed(1)), diff = Number((bM - sM).toFixed(1));
       gN.push(g.name.slice(0, 16)); gB.push(bM); gS.push(sM);
-      return '<div class="flex justify-between items-center p-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs"><div><b>' + MJ.esc(g.name) + '</b> (' + MJ.fmtINR(rem) + ' left)</div><div><b>' + bM + 'm &rarr; ' + sM + 'm</b> ' + (diff > 0 ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">' + diff + 'm faster</span>' : diff < 0 ? '<span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">' + Math.abs(diff) + 'm slower</span>' : '') + '</div></div>';
+      return '<div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs"><div><b>' + MJ.esc(g.name) + '</b> <span class="text-slate-500">(' + MJ.fmtINR(rem) + ' left)</span></div><div><b>' + bM + 'm &rarr; ' + sM + 'm</b> ' + (diff > 0 ? '<span class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold">' + diff + 'm faster</span>' : diff < 0 ? '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">' + Math.abs(diff) + 'm slower</span>' : '') + '</div></div>';
     }).join('');
     if (window.Chart) {
       if (charts.sim) charts.sim.destroy();
-      charts.sim = new Chart($('goal-sim-chart'), { type: 'bar', data: { labels: gN, datasets: [{ label: 'Current (Mo)', data: gB, backgroundColor: '#A8A29E', borderRadius: 6 }, { label: 'What-If (Mo)', data: gS, backgroundColor: '#059669', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } });
+      charts.sim = new Chart($('goal-sim-chart'), { type: 'bar', data: { labels: gN, datasets: [{ label: 'Current (Mo)', data: gB, backgroundColor: '#94A3B8', borderRadius: 6 }, { label: 'What-If (Mo)', data: gS, backgroundColor: '#0F766E', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
     const score = Math.min(100, Math.max(10, 40 + Math.min(25, Math.max(0, Math.round(fin.savingsRate * 0.8))) + Math.min(20, Math.round((fin.runwayMonths / 6) * 20)) + (unusedMo === 0 ? 15 : 6)));
-    $('monthly-report-body').innerHTML = '<div class="flex justify-between items-center p-4 rounded-2xl bg-amber-50 border border-amber-200"><div><div class="text-xs font-bold text-amber-900">Living Financial Health Score</div><div class="text-xs text-stone-600">Savings rate, emergency runway &amp; subscription hygiene</div></div><div class="text-3xl font-extrabold text-amber-700">' + score + '<span class="text-sm text-stone-500">/100</span></div></div><div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"><div class="p-2.5 rounded-xl bg-stone-50 border">Income<br><b>' + MJ.fmtINR(fin.income) + '</b></div><div class="p-2.5 rounded-xl bg-stone-50 border">Spend<br><b>' + MJ.fmtINR(fin.totalSpend) + '</b></div><div class="p-2.5 rounded-xl bg-stone-50 border">Surplus<br><b class="text-emerald-700">' + MJ.fmtINR(fin.surplus) + ' (' + fin.savingsRate + '%)</b></div><div class="p-2.5 rounded-xl bg-stone-50 border">Rules<br><b class="text-indigo-700">' + rKeys.length + ' Active</b></div></div>';
-    $('memory-activity-log').innerHTML = (state.activityLog || []).map(x => '<div class="flex gap-2 p-2 rounded-lg bg-stone-50 border border-stone-100"><span class="px-1.5 py-0.5 rounded bg-stone-200 font-bold text-[10px]">' + MJ.esc(x.badge) + '</span><span class="flex-1">' + MJ.esc(x.text) + '</span><span class="text-[10px] text-stone-400">' + MJ.esc(x.time) + '</span></div>').join('');
-    $('coach-chat-log').innerHTML = state.chatLog.map(m => m.role === 'user' ? '<div class="flex justify-end"><div class="max-w-[85%] px-3 py-2 rounded-2xl bg-stone-900 text-white text-xs">' + MJ.esc(m.text) + '</div></div>' : '<div class="flex justify-start"><div class="max-w-[92%] px-3 py-2 rounded-2xl text-xs ' + (m.type === 'guardrail' ? 'bg-indigo-50 border-2 border-indigo-400 text-indigo-950 font-medium' : 'bg-amber-50 border border-amber-200') + '">' + MJ.esc(m.text) + '</div></div>').join('');
+    $('monthly-report-body').innerHTML = '<div class="flex justify-between items-center p-4 rounded-2xl bg-teal-50/70 border border-teal-200"><div><div class="text-xs font-bold text-teal-900">Financial Health Score</div><div class="text-xs text-slate-600">Savings rate, emergency runway &amp; subscription hygiene</div></div><div class="text-3xl font-extrabold text-teal-700">' + score + '<span class="text-sm text-slate-400">/100</span></div></div><div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Income<br><b>' + MJ.fmtINR(fin.income) + '</b></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Spend<br><b>' + MJ.fmtINR(fin.totalSpend) + '</b></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Surplus<br><b class="text-teal-700">' + MJ.fmtINR(fin.surplus) + ' (' + fin.savingsRate + '%)</b></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">Rules<br><b class="text-slate-900">' + rKeys.length + ' Active</b></div></div>';
+    $('memory-activity-log').innerHTML = (state.activityLog || []).map(x => '<div class="flex gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100"><span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-bold text-[10px]">' + MJ.esc(x.badge) + '</span><span class="flex-1 text-slate-700">' + MJ.esc(x.text) + '</span><span class="text-[10px] text-slate-400">' + MJ.esc(x.time) + '</span></div>').join('');
+    $('coach-chat-log').innerHTML = state.chatLog.map(m => m.role === 'user' ? '<div class="flex justify-end"><div class="max-w-[85%] px-3 py-2 rounded-2xl bg-slate-900 text-white text-xs">' + MJ.esc(m.text) + '</div></div>' : '<div class="flex justify-start"><div class="max-w-[92%] px-3 py-2 rounded-2xl text-xs ' + (m.type === 'guardrail' ? 'bg-rose-50 border border-rose-300 text-rose-950 font-medium' : 'bg-slate-50 border border-slate-200 text-slate-800') + '">' + MJ.esc(m.text) + '</div></div>').join('');
     if (window.lucide) window.lucide.createIcons();
   }
 
   async function runVoice(txt) {
     const p = MJ.parseVoice(state, whatIf, txt); if (!p) return toast('Enter or dictate a command first!', 'error');
     const b = $('voice-parse-result'); b.classList.remove('hidden');
-    b.innerHTML = '<div class="p-3 rounded-xl bg-white/10 border border-white/15"><div class="text-[10px] font-bold text-amber-300 uppercase">1. Speech Diff</div><div class="text-stone-200 mt-1">' + p.highlightedRaw + '</div></div><div class="p-3 rounded-xl bg-white/10 border border-white/15"><div class="text-[10px] font-bold text-sky-300 uppercase">2. Extracted JSON</div><pre class="text-[10px] font-mono text-sky-100 whitespace-pre-wrap mt-1">' + MJ.esc(JSON.stringify(p.payload, null, 2)) + '</pre></div><div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-400/30"><div class="text-[10px] font-bold text-emerald-300 uppercase">3. Action Executed</div><div class="text-white font-semibold mt-1">' + MJ.esc(p.summary) + '</div></div>';
+    b.innerHTML = '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-[10px] font-bold text-slate-500 uppercase">1. Speech Diff</div><div class="text-slate-800 mt-1">' + p.highlightedRaw + '</div></div><div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-[10px] font-bold text-slate-500 uppercase">2. Extracted JSON</div><pre class="text-[10px] font-mono text-slate-700 whitespace-pre-wrap mt-1">' + MJ.esc(JSON.stringify(p.payload, null, 2)) + '</pre></div><div class="p-3 rounded-xl bg-teal-50 border border-teal-200"><div class="text-[10px] font-bold text-teal-800 uppercase">3. Action Executed</div><div class="text-teal-950 font-semibold mt-1">' + MJ.esc(p.summary) + '</div></div>';
     logAct('VOICE', p.intent + ': ' + p.summary);
     if (p.intent === 'WHAT_IF_SIMULATION') { Object.assign(whatIf, p.params); MJ.saveState(state); switchTab('whatif'); toast('What-If Simulator updated!'); }
     else if (p.intent === 'LOG_TRANSACTION') { state.transactions.unshift(p.tx); MJ.saveState(state); switchTab('ingest'); toast('Logged ' + MJ.fmtINR(p.tx.amount)); }
     else { state.chatLog.push({ role: 'user', text: p.original }); const r = await MJ.coachReply(state, p.original); state.chatLog.push({ role: 'coach', type: r.type, text: r.text }); MJ.saveState(state); switchTab('report'); toast(r.type === 'guardrail' ? 'SEBI-Safe Guardrail triggered!' : 'Coach replied!', r.type === 'guardrail' ? 'indigo' : 'normal'); }
   }
 
-  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  document.querySelectorAll('.nav-item, .mob-nav-item').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  window.addEventListener('hashchange', () => switchTab(location.hash.replace('#/', '') || 'overview'));
   $('judge-tour-btn').addEventListener('click', () => $('judge-tour-banner').classList.toggle('hidden'));
   $('close-tour-btn').addEventListener('click', () => $('judge-tour-banner').classList.add('hidden'));
   document.querySelectorAll('.tour-step-btn').forEach(b => b.addEventListener('click', () => {
     const s = b.dataset.tourStep;
     if (s === '1') { const t = 'Uhh what if I cut Swiggy dining out by 30%... wait no 40%, and my rent goes up by 3000?'; $('voice-command-input').value = t; runVoice(t); }
     else if (s === '2') { switchTab('ingest'); $('load-sample-sms-btn').click(); toast('Sample SMS loaded — click Parse or edit UPI/SHARMA_DAIRY!'); }
-    else if (s === '3') { switchTab('subscriptions'); toast('Inspect the +18% JioFiber MoM hike & 2 unused subscriptions!'); }
+    else if (s === '3') { switchTab('subscriptions'); toast('Inspect the +18% JioFiber MoM hike & 2 unused subs!'); }
     else if (s === '4') { const t = 'Should I invest ₹50,000 in Tata Motors or Bitcoin right now?'; $('voice-command-input').value = t; runVoice(t); }
   }));
+  $('open-add-tx-btn').addEventListener('click', () => $('add-tx-modal').classList.replace('hidden', 'flex'));
+  $('close-add-tx-btn').addEventListener('click', () => $('add-tx-modal').classList.replace('flex', 'hidden'));
+  $('save-quick-tx-btn').addEventListener('click', () => {
+    const m = $('quick-merchant').value.trim().toUpperCase(), a = Number($('quick-amount').value) || 0;
+    if (!m || a <= 0) return toast('Enter merchant & amount!', 'error');
+    const cat = MJ.categorize(state, m).category;
+    state.transactions.unshift({ id: 'tq_' + Date.now(), date: '2026-11-21', month: '2026-11', merchant: m, raw: 'Manual entry', amount: a, category: cat, source: 'Quick Add' });
+    $('quick-merchant').value = ''; $('quick-amount').value = ''; $('add-tx-modal').classList.replace('flex', 'hidden');
+    MJ.saveState(state); renderAll(); toast('Added ' + MJ.fmtINR(a) + ' (' + cat + ')');
+  });
   $('xray-fix-btn').addEventListener('click', () => { whatIf.diningCut = 30; whatIf.cancelUnused = true; switchTab('whatif'); toast('Simulated 30% Dining trim + cancelling unused subs!'); });
   $('run-voice-cmd-btn').addEventListener('click', () => runVoice($('voice-command-input').value));
   $('voice-command-input').addEventListener('keydown', e => { if (e.key === 'Enter') runVoice(e.target.value); });
@@ -165,8 +181,7 @@
     }
     const r = new FileReader(); r.onload = () => { $('messy-input').value = String(r.result || ''); toast('Loaded ' + f.name + ' — click Parse!'); }; r.readAsText(f);
   });
-  $('ledger-search').addEventListener('input', renderAll);
-  $('ledger-cat-filter').addEventListener('change', renderAll);
+  $('ledger-search').addEventListener('input', renderAll); $('ledger-cat-filter').addEventListener('change', renderAll);
   $('ledger-tbody').addEventListener('change', e => {
     const sel = e.target.closest('.tx-cat-select'); if (!sel) return;
     const tx = state.transactions.find(t => t.id === sel.dataset.txId); if (!tx) return;
@@ -192,11 +207,12 @@
   $('coach-send-btn').addEventListener('click', () => askCoach($('coach-input').value));
   $('coach-input').addEventListener('keydown', e => { if (e.key === 'Enter') askCoach(e.target.value); });
   document.querySelectorAll('.coach-quick-btn').forEach(b => b.addEventListener('click', () => askCoach(b.dataset.coachQ)));
-  $('open-settings-btn').addEventListener('click', () => { $('api-key-input').value = state.apiKey || ''; $('settings-modal').classList.replace('hidden', 'flex'); });
+  const openSet = () => { $('api-key-input').value = state.apiKey || ''; $('settings-modal').classList.replace('hidden', 'flex'); };
+  $('open-settings-btn').addEventListener('click', openSet); $('mob-settings-btn').addEventListener('click', openSet);
   $('close-settings-btn').addEventListener('click', () => $('settings-modal').classList.replace('flex', 'hidden'));
   $('save-settings-btn').addEventListener('click', () => { state.apiKey = $('api-key-input').value.trim(); MJ.saveState(state); $('settings-modal').classList.replace('flex', 'hidden'); renderAll(); toast('Settings saved!'); });
   $('clear-key-btn').addEventListener('click', () => { state.apiKey = ''; $('api-key-input').value = ''; MJ.saveState(state); renderAll(); toast('Running 100% zero-API mode.'); });
   $('reset-demo-btn').addEventListener('click', () => { state = MJ.defaultState(); whatIf = { diningCut: 0, shoppingCut: 0, rentDelta: 0, incomeDelta: 0, cancelUnused: false }; MJ.saveState(state); $('settings-modal').classList.replace('flex', 'hidden'); renderAll(); toast('Demo reset!'); });
 
-  renderAll();
+  switchTab(location.hash.replace('#/', '') || 'overview');
 })();
