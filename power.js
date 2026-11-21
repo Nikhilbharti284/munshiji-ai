@@ -70,3 +70,18 @@ MJ.applyStressTest = function (key, whatIf, fin, state, toast) {
     MJ.speak(msg);
   }
 };
+
+MJ.celebrate = function () { if (typeof window.confetti === 'function') window.confetti({ particleCount: 55, spread: 60, origin: { y: 0.7 } }); };
+MJ.renderGoalRings = function (state, saveAndRender, toast) {
+  const el = document.getElementById('goal-rings-grid'); if (!el) return;
+  el.innerHTML = (state.goals || []).slice(0, 3).map(g => {
+    const pct = Math.min(100, Math.round(((Number(g.saved) || 0) / Math.max(1, Number(g.target) || 1)) * 100));
+    const dash = 113 - (113 * pct) / 100;
+    return '<div class="pro-card bg-white rounded-2xl p-3.5 border border-slate-200 flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0"><svg class="w-11 h-11 -rotate-90 shrink-0" viewBox="0 0 42 42"><circle cx="21" cy="21" r="18" fill="none" stroke="#E2E8F0" stroke-width="4"/><circle cx="21" cy="21" r="18" fill="none" stroke="#0F766E" stroke-width="4" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="' + dash + '"/></svg><div class="min-w-0"><div class="text-xs font-bold text-slate-900 truncate">' + MJ.esc(g.name) + '</div><div class="text-[11px] text-slate-500">' + pct + '% &bull; ' + MJ.fmtINR(g.saved) + ' / ' + MJ.fmtINR(g.target) + '</div></div></div><button type="button" data-boost-goal="' + MJ.esc(g.id) + '" class="boost-goal-btn shrink-0 px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 text-[11px] font-bold">+₹5k</button></div>';
+  }).join('');
+  el.querySelectorAll('.boost-goal-btn').forEach(btn => btn.addEventListener('click', () => {
+    const g = state.goals.find(x => x.id === btn.dataset.boostGoal); if (!g) return;
+    g.saved = Math.min(Number(g.target) || 0, (Number(g.saved) || 0) + 5000);
+    saveAndRender(); MJ.celebrate(); toast('Boosted ' + g.name + ' by ₹5,000!');
+  }));
+};

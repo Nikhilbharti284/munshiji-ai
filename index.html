@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -72,6 +73,7 @@
           <h2 id="page-title" class="text-sm sm:text-base font-bold text-slate-900 truncate">Overview</h2>
         </div>
         <div class="flex items-center gap-2 shrink-0">
+          <button id="theme-toggle-btn" type="button" title="Dark/Light Mode" class="p-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition"><i data-lucide="moon" class="w-4 h-4"></i></button>
           <button id="open-add-tx-btn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">Add Spend</span></button>
           <button id="judge-tour-btn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white flex items-center gap-1.5"><i data-lucide="play" class="w-3.5 h-3.5"></i><span>Demo Tour</span></button>
           <button id="mob-settings-btn" type="button" class="md:hidden p-1.5 rounded-xl border border-slate-200 text-slate-600"><i data-lucide="settings" class="w-4 h-4"></i></button>
@@ -113,6 +115,7 @@
         </section>
 
         <section id="tab-overview" class="tab-panel space-y-5">
+<div class="pro-card rounded-2xl p-5 bg-gradient-to-r from-teal-800 via-teal-700 to-emerald-700 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"><div class="space-y-1.5 max-w-lg"><div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> Living Money Model &bull; Live</div><h3 class="text-lg sm:text-xl font-extrabold tracking-tight">Your Voice-First Financial Command Center</h3><p class="text-xs text-teal-100 leading-relaxed">Parses messy UPI/PDF statements, catches subscription hikes, simulates life events, and enforces SEBI-safe guardrails — 100% locally.</p></div><svg viewBox="0 0 140 96" class="w-32 h-22 shrink-0 hidden sm:block" fill="none"><rect x="6" y="10" width="128" height="76" rx="14" fill="white" fill-opacity="0.12" stroke="white" stroke-opacity="0.25"/><path d="M22 66L46 46L66 56L96 28L118 36" stroke="#A7F3D0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="28" r="5" fill="#FDE68A"/><circle cx="118" cy="36" r="4" fill="#6EE7B7"/><rect x="20" y="22" width="38" height="8" rx="4" fill="white" fill-opacity="0.35"/></svg></div><div id="goal-rings-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Monthly Income</div><div id="kpi-income" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">₹0</div></div>
             <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Monthly Spend</div><div id="kpi-spend" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">₹0</div><div id="kpi-spend-sub" class="text-[11px] text-slate-400 mt-0.5"></div></div>

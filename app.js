@@ -112,6 +112,7 @@
     $('memory-activity-log').innerHTML = (state.activityLog || []).map(x => '<div class="flex gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100"><span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-bold text-[10px]">' + MJ.esc(x.badge) + '</span><span class="flex-1 text-slate-700">' + MJ.esc(x.text) + '</span><span class="text-[10px] text-slate-400">' + MJ.esc(x.time) + '</span></div>').join('');
     $('coach-chat-log').innerHTML = state.chatLog.map(m => m.role === 'user' ? '<div class="flex justify-end"><div class="max-w-[85%] px-3 py-2 rounded-2xl bg-slate-900 text-white text-xs">' + MJ.esc(m.text) + '</div></div>' : '<div class="flex justify-start"><div class="max-w-[92%] px-3 py-2 rounded-2xl text-xs ' + (m.type === 'guardrail' ? 'bg-rose-50 border border-rose-300 text-rose-950 font-medium' : 'bg-slate-50 border border-slate-200 text-slate-800') + '">' + MJ.esc(m.text) + '</div></div>').join('');
     if (MJ.renderCategoryBars) MJ.renderCategoryBars(fin);
+    if (MJ.renderGoalRings) MJ.renderGoalRings(state, () => { MJ.saveState(state); renderAll(); }, toast);
     if (MJ.renderProjectionChart) MJ.renderProjectionChart(state, fin, deltaMo);
     if (window.lucide) window.lucide.createIcons();
   }
@@ -217,6 +218,7 @@
   $('reset-demo-btn').addEventListener('click', () => { state = MJ.defaultState(); whatIf = { diningCut: 0, shoppingCut: 0, rentDelta: 0, incomeDelta: 0, cancelUnused: false }; MJ.saveState(state); $('settings-modal').classList.replace('flex', 'hidden'); renderAll(); toast('Demo reset!'); });
 
   $('tts-toggle-btn').addEventListener('click', () => { MJ.ttsEnabled = !MJ.ttsEnabled; $('tts-toggle-btn').textContent = MJ.ttsEnabled ? 'Voice Reply: ON' : 'Voice Reply: OFF'; $('tts-toggle-btn').className = MJ.ttsEnabled ? 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-teal-700 text-white transition' : 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition'; toast(MJ.ttsEnabled ? 'Voice Read-Aloud ON!' : 'Voice Read-Aloud OFF'); if (MJ.ttsEnabled) MJ.speak('Voice replies enabled. Ask MunshiJi anything.'); });
-  document.querySelectorAll('.stress-btn').forEach(b => b.addEventListener('click', () => { MJ.applyStressTest(b.dataset.stress, whatIf, MJ.computeFinancials(state), state, toast); renderAll(); }));
+  document.querySelectorAll('.stress-btn').forEach(b => b.addEventListener('click', () => { MJ.applyStressTest(b.dataset.stress, whatIf, MJ.computeFinancials(state), state, toast); if (b.dataset.stress === 'monk' || b.dataset.stress === 'hike') MJ.celebrate(); renderAll(); }));
+  $('theme-toggle-btn').addEventListener('click', () => { document.body.classList.toggle('dark-pro'); toast(document.body.classList.contains('dark-pro') ? 'Dark Pro Mode ON' : 'Light Mode ON'); });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();
