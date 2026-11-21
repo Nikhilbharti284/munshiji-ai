@@ -166,6 +166,7 @@
   $('nudges-list').addEventListener('click', e => { const b = e.target.closest('.nudge-btn'); if (!b) return; if (b.dataset.nudge === 'sim-dining') { whatIf.diningCut = 30; switchTab('whatif'); } else if (b.dataset.nudge === 'sim-shopping') { whatIf.shoppingCut = 30; switchTab('whatif'); } else if (b.dataset.nudge === 'goto-subs') switchTab('subscriptions'); else switchTab('ingest'); });
   $('load-sample-sms-btn').addEventListener('click', () => { $('messy-input').value = 'Rs.540.00 debited from A/c XX4821 via UPI to ZOMATO@okaxis on 20-Nov-26\nINR 410 sent to RAMU_KAKA via GPay on 20-Nov-26\nRs.85,000.00 credited to A/c XX4821 salary credited on 01-Nov-26\n2026-11-21, RAPIDO AUTO RIDE, 185'; });
   $('parse-ingest-btn').addEventListener('click', () => {
+    if (MJ.detectScamSMS && MJ.detectScamSMS($('messy-input').value)) { toast('UPI Scam / Phishing SMS blocked!', 'error'); logAct('SECURITY', 'Blocked suspected phishing/KYC scam SMS'); renderAll(); return; }
     const res = MJ.parseLines(state, $('messy-input').value);
     if (!res.added.length) return toast(res.skippedCredits ? 'Skipped ' + res.skippedCredits + ' credit SMS.' : 'No debit amounts found!', 'error');
     state.transactions = res.added.concat(state.transactions); $('messy-input').value = '';
@@ -220,5 +221,19 @@
   $('tts-toggle-btn').addEventListener('click', () => { MJ.ttsEnabled = !MJ.ttsEnabled; $('tts-toggle-btn').textContent = MJ.ttsEnabled ? 'Voice Reply: ON' : 'Voice Reply: OFF'; $('tts-toggle-btn').className = MJ.ttsEnabled ? 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-teal-700 text-white transition' : 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition'; toast(MJ.ttsEnabled ? 'Voice Read-Aloud ON!' : 'Voice Read-Aloud OFF'); if (MJ.ttsEnabled) MJ.speak('Voice replies enabled. Ask MunshiJi anything.'); });
   document.querySelectorAll('.stress-btn').forEach(b => b.addEventListener('click', () => { MJ.applyStressTest(b.dataset.stress, whatIf, MJ.computeFinancials(state), state, toast); if (b.dataset.stress === 'monk' || b.dataset.stress === 'hike') MJ.celebrate(); renderAll(); }));
   $('theme-toggle-btn').addEventListener('click', () => { document.body.classList.toggle('dark-pro'); toast(document.body.classList.contains('dark-pro') ? 'Dark Pro Mode ON' : 'Light Mode ON'); });
+  $('theme-toggle-btn').addEventListener('click', () => { document.body.classList.toggle('dark-pro'); toast(document.body.classList.contains('dark-pro') ? 'Dark Pro Mode ON' : 'Light Mode ON'); });
+  $('tts-toggle-btn').addEventListener('click', () => { MJ.ttsEnabled = !MJ.ttsEnabled; $('tts-toggle-btn').textContent = MJ.ttsEnabled ? 'Voice Reply: ON' : 'Voice Reply: OFF'; toast(MJ.ttsEnabled ? 'Voice Replies ON' : 'Voice Replies OFF'); });
+  document.querySelectorAll('.stress-btn').forEach(b => b.addEventListener('click', () => { MJ.applyStressTest(b.dataset.stress, whatIf, MJ.computeFinancials(state), state, toast); renderAll(); }));
+  $('auto-demo-btn').addEventListener('click', () => {
+    const running = MJ.runAutoDemo({
+      s1: () => switchTab('overview'),
+      s2: () => { const t = 'Uhh what if I cut Swiggy dining out by 30%... wait no 40%, and my rent goes up by 3000?'; $('voice-command-input').value = t; runVoice(t); },
+      s3: () => { switchTab('ingest'); $('load-sample-sms-btn').click(); },
+      s4: () => switchTab('subscriptions'),
+      s5: () => { const t = 'Should I invest ₹50,000 in Tata Motors or Bitcoin right now?'; $('voice-command-input').value = t; runVoice(t); },
+      onStatus: msg => toast(msg, 'indigo')
+    });
+    $('auto-demo-btn').textContent = running ? '■ Stop Demo' : '▶ Auto-Demo';
+  });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();
