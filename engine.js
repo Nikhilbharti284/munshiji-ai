@@ -57,7 +57,7 @@ MJ.parseLines = function (state, text) {
 };
 
 MJ.computeFinancials = function (state) {
-  const curTx = state.transactions.filter(t => t.month === '2026-11');
+  const curTx = (!MJ.activeMonth || MJ.activeMonth === 'ALL') ? state.transactions : state.transactions.filter(t => t.month === MJ.activeMonth);
   const byCat = {}; MJ.CATEGORIES.forEach(c => { byCat[c] = 0; });
   let variableTotal = 0;
   curTx.forEach(t => { const a = Number(t.amount) || 0; byCat[t.category] = (byCat[t.category] || 0) + a; variableTotal += a; });

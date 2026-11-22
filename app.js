@@ -165,13 +165,13 @@
   });
   $('nudges-list').addEventListener('click', e => { const b = e.target.closest('.nudge-btn'); if (!b) return; if (b.dataset.nudge === 'sim-dining') { whatIf.diningCut = 30; switchTab('whatif'); } else if (b.dataset.nudge === 'sim-shopping') { whatIf.shoppingCut = 30; switchTab('whatif'); } else if (b.dataset.nudge === 'goto-subs') switchTab('subscriptions'); else switchTab('ingest'); });
   $('load-sample-sms-btn').addEventListener('click', () => { $('messy-input').value = 'Rs.540.00 debited from A/c XX4821 via UPI to ZOMATO@okaxis on 20-Nov-26\nINR 410 sent to RAMU_KAKA via GPay on 20-Nov-26\nRs.85,000.00 credited to A/c XX4821 salary credited on 01-Nov-26\n2026-11-21, RAPIDO AUTO RIDE, 185'; });
-  $('parse-ingest-btn').addEventListener('click', () => {
+  $('parse-ingest-btn').addEventListener('click', async () => {
     if (MJ.detectScamSMS && MJ.detectScamSMS($('messy-input').value)) { toast('UPI Scam / Phishing SMS blocked!', 'error'); logAct('SECURITY', 'Blocked suspected phishing/KYC scam SMS'); renderAll(); return; }
-    const res = MJ.parseLines(state, $('messy-input').value);
+    const res = MJ.parseMultiBank ? await MJ.parseMultiBank(state, $('messy-input').value) : MJ.parseLines(state, $('messy-input').value);
     if (!res.added.length) return toast(res.skippedCredits ? 'Skipped ' + res.skippedCredits + ' credit SMS.' : 'No debit amounts found!', 'error');
     state.transactions = res.added.concat(state.transactions); $('messy-input').value = '';
     logAct('INGEST', 'Parsed ' + res.added.length + ' debits' + (res.skippedCredits ? ' (skipped ' + res.skippedCredits + ' credits)' : ''));
-    MJ.saveState(state); renderAll(); toast('Ingested ' + res.added.length + ' debits!' + (res.skippedCredits ? ' (' + res.skippedCredits + ' credit skipped)' : ''));
+    MJ.saveState(state); renderAll(); toast('Ingested ' + res.added.length + ' debits!' + (res.skippedDuplicates ? ' (' + res.skippedDuplicates + ' duplicates blocked)' : '') + (res.skippedCredits ? ' (' + res.skippedCredits + ' credits skipped)' : ''));
   });
   $('csv-file-input').addEventListener('change', async e => {
     const f = e.target.files?.[0]; if (!f) return;
@@ -236,5 +236,30 @@
     $('auto-demo-btn').textContent = running ? '■ Stop Demo' : '▶ Auto-Demo';
   });
   $('ai-audit-btn').addEventListener('click', async () => { $('ai-audit-output').textContent = 'Analyzing ledger...'; const res = await MJ.generateDeepAudit(state); $('ai-audit-output').textContent = '[' + res.source + ']\n' + res.text; if (MJ.speak) MJ.speak(res.text); });
+  MJ.activeMonth = '2026-11';
+  if (MJ.BRAND) {
+    document.title = MJ.BRAND.brandName + ' — ' + MJ.BRAND.tagline;
+    document.querySelectorAll('h1').forEach(el => { el.textContent = MJ.BRAND.brandName; });
+    if (MJ.fmtMoney) MJ.fmtINR = MJ.fmtMoney;
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+  const mp = $('month-picker');
+  if (mp) mp.addEventListener('change', e => { MJ.activeMonth = e.target.value; renderAll(); toast('Switched view: ' + e.target.value); });
+  if ($('export-enc-btn')) $('export-enc-btn').addEventListener('click', async () => {
+    const pw = $('vault-pw-input').value; if (!pw || pw.length < 4) return toast('Enter a 4+ char vault password!', 'error');
+    const enc = await MJ.encryptVault(state, pw);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([enc], { type: 'text/plain' })); a.download = 'munshiji_vault.enc'; a.click();
+    toast('Encrypted AES-GCM-256 backup downloaded!', 'indigo');
+  });
+  if ($('import-enc-input')) $('import-enc-input').addEventListener('change', async e => {
+    const f = e.target.files?.[0], pw = $('vault-pw-input').value;
+    if (!f || !pw) return toast('Enter your vault password first!', 'error');
+    try { state = await MJ.decryptVault(await f.text(), pw); MJ.saveState(state); renderAll(); toast('Encrypted vault restored!', 'indigo'); }
+    catch (err) { toast('Wrong password or corrupted .enc file!', 'error'); }
+  });
+  if ($('verify-lic-btn')) $('verify-lic-btn').addEventListener('click', async () => {
+    const r = await MJ.verifyLicense($('license-key-input').value);
+    toast(r.note, r.valid ? 'indigo' : 'error');
+  });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();
