@@ -3,7 +3,7 @@ MJ.BRAND = {
   brandName: 'MunshiJi OS',
   tagline: 'Zero-Cloud Living Money OS',
   logoSymbol: '₹',
-  primaryHex: '#0F766E',
+  primaryHex: '#009ADE',
   currency: 'INR',
   coachName: '',
   gumroadProductId: '', // Paste Gumroad Product ID when live
