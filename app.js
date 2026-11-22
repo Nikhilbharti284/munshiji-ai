@@ -28,7 +28,32 @@
     renderAll();
   }
 
+  
+  function applyDynamicPolish() {
+    // 1. Dynamic Month Picker from actual transactions
+    const mp = $('month-picker');
+    if (mp) {
+      const months = Array.from(new Set(state.transactions.map(t => t.month).filter(Boolean))).sort().reverse();
+      const prev = MJ.activeMonth || months[0] || 'ALL';
+      mp.innerHTML = months.map(m => '<option value="' + m + '"' + (m === prev ? ' selected' : '') + '>' + m + '</option>').join('') + '<option value="ALL"' + (prev === 'ALL' ? ' selected' : '') + '>All Months</option>';
+      if ($('report-month-title')) $('report-month-title').textContent = (MJ.activeMonth === 'ALL' ? 'All-Time' : MJ.activeMonth) + ' Financial Review';
+    }
+    // 2. B2B White-Label Clean Mode (hide hackathon clutter when ?coach= is active)
+    if (MJ.BRAND && MJ.BRAND.coachName) {
+      ['judge-tour-btn', 'auto-demo-btn', 'judge-tour-banner', 'engine-badge'].forEach(id => { if ($(id)) $(id).classList.add('hidden'); });
+    }
+    // 3. Dynamic Currency Symbol in labels (USD vs INR)
+    if (MJ.BRAND && MJ.BRAND.currency === 'USD') {
+      document.querySelectorAll('label, button, div').forEach(el => {
+        if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3 && el.textContent.includes('₹')) {
+          el.textContent = el.textContent.replace(/₹/g, '$');
+        }
+      });
+    }
+  }
+
   function renderAll() {
+    applyDynamicPolish();
     const fin = MJ.computeFinancials(state), subs = MJ.detectSubs(state);
     $('engine-badge').innerHTML = state.apiKey ? '<span class="w-2 h-2 rounded-full bg-indigo-500"></span> Zero-API + Gemini' : '<span class="w-2 h-2 rounded-full bg-teal-600"></span> Zero-API Engine';
     const alertCnt = String(subs.filter(s => s.hike > 0 || s.status === 'unused').length);
@@ -246,6 +271,7 @@
   const mp = $('month-picker');
   if (mp) mp.addEventListener('change', e => { MJ.activeMonth = e.target.value; renderAll(); toast('Switched view: ' + e.target.value); });
   if ($('export-enc-btn')) $('export-enc-btn').addEventListener('click', async () => {
+    if (!state.isPro) return toast('Encrypted .enc Vault is a Pro feature — activate a Pro License Key below!', 'error');
     const pw = $('vault-pw-input').value; if (!pw || pw.length < 4) return toast('Enter a 4+ char vault password!', 'error');
     const enc = await MJ.encryptVault(state, pw);
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([enc], { type: 'text/plain' })); a.download = 'munshiji_vault.enc'; a.click();
@@ -259,6 +285,7 @@
   });
   if ($('verify-lic-btn')) $('verify-lic-btn').addEventListener('click', async () => {
     const r = await MJ.verifyLicense($('license-key-input').value);
+    if (r.valid) { state.isPro = true; MJ.saveState(state); renderAll(); }
     toast(r.note, r.valid ? 'indigo' : 'error');
   });
   switchTab(location.hash.replace('#/', '') || 'overview');

@@ -33,7 +33,7 @@
           <label class="flex-1 py-1.5 text-xs font-semibold bg-slate-100 text-slate-800 rounded-xl text-center cursor-pointer">Restore .enc<input id="import-enc-input" type="file" accept=".enc,.txt" class="hidden" /></label>
         </div>
         <div class="flex gap-2 pt-1">
-          <input id="license-key-input" type="text" placeholder="License: MJPRO-DEMO-2026" class="flex-1 px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl" />
+          <input id="license-key-input" type="text" placeholder="Enter Pro License Key..." class="flex-1 px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl" />
           <button id="verify-lic-btn" type="button" class="px-3 py-1.5 text-xs font-bold bg-teal-700 text-white rounded-xl">Activate</button>
         </div>
       </div>
@@ -140,7 +140,7 @@
             <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Emergency Runway</div><div id="kpi-runway" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">0 mo</div><div class="w-full bg-slate-100 h-1.5 rounded-full mt-2"><div id="kpi-runway-bar" class="bg-teal-600 h-full rounded-full" style="width:0%"></div></div></div>
           </div>
           <div class="bg-white rounded-2xl p-4 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div><span class="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md">Rupee Leak X-Ray</span><p id="xray-summary" class="text-xs sm:text-sm text-slate-600 mt-1.5"></p></div>
+            <div><span class="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md"><span id="xray-title-lbl">Cash Leak X-Ray</span></span><p id="xray-summary" class="text-xs sm:text-sm text-slate-600 mt-1.5"></p></div>
             <div class="flex items-center gap-3 shrink-0"><div class="text-right"><div class="text-[10px] text-slate-400 uppercase font-semibold">Recoverable</div><div id="xray-annual-leak" class="text-base font-extrabold text-teal-700">₹0</div></div><button id="xray-fix-btn" type="button" class="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold">Simulate &rarr;</button></div>
           </div>
           <div class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
@@ -220,7 +220,7 @@
 
         <section id="tab-report" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
           <div class="lg:col-span-7 bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2.5"><h3 class="text-base font-bold">November 2026 Review</h3><div class="flex gap-2 no-print"><button id="export-json-btn" type="button" class="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700">Export JSON</button><button id="print-report-btn" type="button" class="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-900 text-white">Print / PDF</button></div></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2.5"><h3 id="report-month-title" class="text-base font-bold">Monthly Financial Review</h3><div class="flex gap-2 no-print"><button id="export-json-btn" type="button" class="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700">Export JSON</button><button id="print-report-btn" type="button" class="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-900 text-white">Print / PDF</button></div></div>
             <div id="monthly-report-body" class="space-y-3"></div>
             <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2"><div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-800">Executive AI Deep Audit</span><button id="ai-audit-btn" type="button" class="px-3 py-1 rounded-lg bg-teal-700 hover:bg-teal-800 text-white text-[11px] font-semibold">Run Deep Audit</button></div><pre id="ai-audit-output" class="text-xs text-slate-600 whitespace-pre-wrap font-sans">Click "Run Deep Audit" for a 3-point diagnosis (uses Gemini/Groq if key set, else local engine).</pre></div>
             <div class="pt-2 border-t border-slate-100"><h4 class="text-xs font-bold uppercase text-slate-400 mb-1.5">Memory &amp; Guardrail Log</h4><div id="memory-activity-log" class="space-y-1.5 text-xs max-h-40 overflow-y-auto"></div></div>
