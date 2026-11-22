@@ -20,4 +20,4 @@ MJ.BRAND = {
     document.documentElement.style.setProperty('--brand', MJ.BRAND.primaryHex);
   } catch (e) {}
 })();
-MJ.fmtMoney = n => { const v = Math.round(Number(n) || 0), s = v < 0 ? '-' : ''; return MJ.BRAND.currency === 'USD' ? s + '$' + Math.abs(v).toLocaleString('en-US') : s + '₹' + Math.abs(v).toLocaleString('en-IN'); };
+MJ.fmtMoney = n => { const v = Math.round((Number(n) || 0) * 100) / 100, s = v < 0 ? '-' : '', opts = Number.isInteger(v) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 }; return MJ.BRAND.currency === 'USD' ? s + '$' + Math.abs(v).toLocaleString('en-US', opts) : s + '₹' + Math.abs(v).toLocaleString('en-IN', opts); };

@@ -190,7 +190,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div class="lg:col-span-2 bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
               <div class="flex justify-between items-center"><h3 class="text-sm font-bold">Messy PDF / CSV / UPI SMS Ingest</h3><button id="load-sample-sms-btn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-50 text-teal-800 hover:bg-teal-100 whitespace-nowrap shrink-0">+ Sample SMS</button></div>
-              <textarea id="messy-input" rows="4" placeholder="Paste bank/UPI SMS, CSV rows, or upload a text-based PDF..." class="w-full p-3 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600"></textarea>
+              <textarea id="messy-input" rows="4" placeholder="CSV best (HDFC, SBI, ICICI, Axis, Kotak). Text-based PDFs only — scanned or password-protected PDFs are not supported." class="w-full p-3 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600"></textarea>
               <div class="flex flex-wrap justify-between gap-2">
                 <label class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">Upload Bank CSV / Text PDF<input id="csv-file-input" type="file" accept=".pdf,.csv,.txt" class="hidden" /></label>
                 <button id="parse-ingest-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white">Parse &amp; Auto-Categorize</button>
@@ -268,7 +268,7 @@
           </div>
         </section>
       </main>
-      <footer class="max-w-5xl w-full mx-auto px-4 pb-24 md:pb-6 pt-2 text-center text-xs text-slate-500">Educational tool. Not SEBI-registered investment advice.</footer>
+      <footer class="max-w-5xl w-full mx-auto px-4 pb-24 md:pb-6 pt-2 text-center text-xs text-slate-500">Educational tool. Not SEBI-registered investment advice. &bull; Support: nikhilbharti594@gmail.com</footer>
     </div>
   </div>
 

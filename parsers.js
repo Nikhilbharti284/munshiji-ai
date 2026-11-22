@@ -1,6 +1,6 @@
 window.MJ = window.MJ || {};
 MJ.txHash = async function (date, amount, merchant, refOrBal) {
-  const raw = [String(date || ''), Math.round(Number(amount) || 0), MJ.normKey(merchant), String(refOrBal || '')].join('|');
+  const raw = [String(date || ''), (Number(amount) || 0).toFixed(2), MJ.normKey(merchant), String(refOrBal || '')].join('|');
   try {
     if (window.crypto && window.crypto.subtle) {
       const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
@@ -38,7 +38,7 @@ MJ.parseMultiBank = async function (state, text) {
         let cr = parseFloat(get(/credit|deposit|cr\b|inflow/i).replace(/[^0-9.]/g, '')) || 0;
         if (amtOnly > 0 && dr === 0 && cr === 0) { if (/^CR|CREDIT/.test(drCr)) cr = amtOnly; else dr = amtOnly; }
         if (cr > 0 && dr === 0) { skippedCredits++; return; }
-        if (dr > 0 && narr) rawItems.push({ date: MJ.extractDate(dStr), merchant: narr.toUpperCase().slice(0, 42), raw: narr, amount: Math.round(dr), ref, source: 'Bank CSV' });
+        if (dr > 0 && narr) rawItems.push({ date: MJ.extractDate(dStr), merchant: narr.toUpperCase().slice(0, 42), raw: narr, amount: Math.round(dr * 100) / 100, ref, source: 'Bank CSV' });
       });
     }
   }
