@@ -195,6 +195,7 @@
     if (MJ.detectScamSMS && MJ.detectScamSMS($('messy-input').value)) { toast('UPI Scam / Phishing SMS blocked!', 'error'); logAct('SECURITY', 'Blocked suspected phishing/KYC scam SMS'); renderAll(); return; }
     const res = MJ.parseMultiBank ? await MJ.parseMultiBank(state, $('messy-input').value) : MJ.parseLines(state, $('messy-input').value);
     if (!res.added.length) return toast(res.skippedCredits ? 'Skipped ' + res.skippedCredits + ' credit SMS.' : 'No debit amounts found!', 'error');
+    if (!state.isPro && (state.transactions.length + res.added.length) > 25) return toast('Free tier allows up to 25 transactions — activate Pro License in Settings for unlimited imports!', 'error');
     state.transactions = res.added.concat(state.transactions); $('messy-input').value = '';
     logAct('INGEST', 'Parsed ' + res.added.length + ' debits' + (res.skippedCredits ? ' (skipped ' + res.skippedCredits + ' credits)' : ''));
     MJ.saveState(state); renderAll(); toast('Ingested ' + res.added.length + ' debits!' + (res.skippedDuplicates ? ' (' + res.skippedDuplicates + ' duplicates blocked)' : '') + (res.skippedCredits ? ' (' + res.skippedCredits + ' credits skipped)' : ''));
