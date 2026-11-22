@@ -15,7 +15,32 @@ MJ.decryptVault = async (b64, pw) => {
   const p = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b.slice(16, 28) }, await MJ.deriveKey(pw, b.slice(0, 16)), b.slice(28));
   return JSON.parse(new TextDecoder().decode(p));
 };
-MJ.verifyLicense = async keyStr => {
-  const k = String(keyStr || '').trim().toUpperCase();
-  return /^MJPRO-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(k) ? { valid: true, note: 'Pro Lifetime Unlocked!' } : { valid: false, note: 'Invalid key (try demo: MJPRO-DEMO-2026)' };
+
+MJ.verifyLicense = async function (keyStr) {
+  const k = String(keyStr || '').trim();
+  if (!k || k.length < 8) return { valid: false, note: 'Enter a valid license key from your purchase receipt.' };
+  const productId = (MJ.BRAND && MJ.BRAND.gumroadProductId) || '';
+  if (productId) {
+    try {
+      const r = await fetch('https://api.gumroad.com/v2/licenses/verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'product_id=' + encodeURIComponent(productId) + '&license_key=' + encodeURIComponent(k)
+      });
+      const d = await r.json();
+      if (d && d.success && !d.purchase?.refunded && !d.purchase?.chargebacked) return { valid: true, note: 'Pro Lifetime License verified via Gumroad!' };
+      return { valid: false, note: d?.message || 'License key invalid or refunded.' };
+    } catch (e) { return { valid: false, note: 'Could not reach license server.' }; }
+  }
+  if (MJ.BRAND && MJ.BRAND.lemonSqueezy) {
+    try {
+      const r = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
+        method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'license_key=' + encodeURIComponent(k)
+      });
+      const d = await r.json();
+      if (d && d.valid) return { valid: true, note: 'Pro License verified via Lemon Squeezy!' };
+      return { valid: false, note: d?.error || 'Invalid Lemon Squeezy key.' };
+    } catch (e) { return { valid: false, note: 'License validation failed.' }; }
+  }
+  return { valid: false, note: 'Add your Gumroad product_id in brandConfig.js to enable live verification.' };
 };

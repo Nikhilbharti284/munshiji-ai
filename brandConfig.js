@@ -6,6 +6,8 @@ MJ.BRAND = {
   primaryHex: '#0F766E',
   currency: 'INR',
   coachName: '',
+  gumroadProductId: '', // Paste Gumroad Product ID when live
+  lemonSqueezy: false,
   sebiDisclaimer: 'Educational money modeling only — not a SEBI-registered investment advisor.'
 };
 (function () {

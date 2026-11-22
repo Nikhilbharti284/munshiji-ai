@@ -40,7 +40,8 @@
     }
     // 2. B2B White-Label Clean Mode (hide hackathon clutter when ?coach= is active)
     if (MJ.BRAND && MJ.BRAND.coachName) {
-      ['judge-tour-btn', 'auto-demo-btn', 'judge-tour-banner', 'engine-badge'].forEach(id => { if ($(id)) $(id).classList.add('hidden'); });
+      if ($('ai-audit-output') && $('ai-audit-output').textContent.includes('Gemini')) $('ai-audit-output').textContent = 'Click "Run Deep Audit" for your 3-point financial diagnosis.';
+      ['judge-tour-btn', 'auto-demo-btn', 'judge-tour-banner', 'engine-badge', 'api-key-block'].forEach(id => { if ($(id)) $(id).classList.add('hidden'); });
     }
     // 3. Dynamic Currency Symbol in labels (USD vs INR)
     if (MJ.BRAND && MJ.BRAND.currency === 'USD') {
@@ -288,5 +289,6 @@
     if (r.valid) { state.isPro = true; MJ.saveState(state); renderAll(); }
     toast(r.note, r.valid ? 'indigo' : 'error');
   });
+  if ($('clear-sample-btn')) $('clear-sample-btn').addEventListener('click', () => { state.transactions = []; MJ.saveState(state); if ($('sample-data-bar')) $('sample-data-bar').classList.add('hidden'); switchTab('ingest'); toast('Cleared sample data — upload your bank CSV or SMS!'); });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();

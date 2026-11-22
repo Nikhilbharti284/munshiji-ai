@@ -23,8 +23,8 @@
         <h3 class="text-base font-bold text-slate-900">Engine &amp; Memory Settings</h3>
         <button id="close-settings-btn" type="button" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500">✕</button>
       </div>
-      <p class="text-xs text-slate-500 leading-relaxed">Runs 100% free with zero API keys using our deterministic financial engine. Optionally add a free Gemini API key for extended Q&amp;A.</p>
-      <input id="api-key-input" type="password" placeholder="AIza... (Gemini) or gsk_... (Groq)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600" />
+      <div id="api-key-block" class="space-y-2"><p class="text-xs text-slate-500 leading-relaxed">Runs 100% free with zero API keys using our deterministic financial engine. Optionally add a free Gemini API key for extended Q&amp;A.</p>
+      <input id="api-key-input" type="password" placeholder="AIza... (Gemini) or gsk_... (Groq)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600" /></div>
       <div class="pt-3 border-t border-slate-100 space-y-2">
         <div class="text-xs font-bold text-slate-800">Encrypted Local Vault (AES-GCM-256)</div>
         <input id="vault-pw-input" type="password" placeholder="Vault password..." class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl" />
@@ -98,6 +98,7 @@
       </header>
 
       <main class="max-w-5xl w-full mx-auto px-4 py-5 pb-24 md:pb-8 space-y-5">
+        <div id="sample-data-bar" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-2 no-print"><span><strong>Sample Data Loaded</strong> — Explore live features, or clear to upload your own statement.</span><button id="clear-sample-btn" type="button" class="px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 font-semibold">Clear &amp; Start Fresh</button></div>
         <section id="judge-tour-banner" class="hidden bg-teal-50/70 border border-teal-200 rounded-2xl p-4 no-print">
           <div class="flex justify-between items-center mb-2.5">
             <span class="text-xs font-bold text-teal-900">3-Minute Guided Demo Walkthrough</span>
@@ -134,9 +135,9 @@
         <section id="tab-overview" class="tab-panel space-y-5">
 <div class="pro-card rounded-2xl p-5 bg-gradient-to-r from-teal-800 via-teal-700 to-emerald-700 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"><div class="space-y-1.5 max-w-lg"><div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> Living Money Model &bull; Live</div><h3 class="text-lg sm:text-xl font-extrabold tracking-tight">Your Voice-First Financial Command Center</h3><p class="text-xs text-teal-100 leading-relaxed">Parses messy UPI/PDF statements, catches subscription hikes, simulates life events, and enforces SEBI-safe guardrails — 100% locally.</p></div><svg viewBox="0 0 140 96" class="w-32 h-22 shrink-0 hidden sm:block" fill="none"><rect x="6" y="10" width="128" height="76" rx="14" fill="white" fill-opacity="0.12" stroke="white" stroke-opacity="0.25"/><path d="M22 66L46 46L66 56L96 28L118 36" stroke="#A7F3D0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="28" r="5" fill="#FDE68A"/><circle cx="118" cy="36" r="4" fill="#6EE7B7"/><rect x="20" y="22" width="38" height="8" rx="4" fill="white" fill-opacity="0.35"/></svg></div><div id="goal-rings-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Monthly Income</div><div id="kpi-income" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">₹0</div></div>
-            <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Monthly Spend</div><div id="kpi-spend" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">₹0</div><div id="kpi-spend-sub" class="text-[11px] text-slate-400 mt-0.5"></div></div>
-            <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Net Surplus</div><div id="kpi-surplus" class="text-xl sm:text-2xl font-extrabold text-teal-700 mt-1">₹0</div><div id="kpi-savings-rate" class="text-[11px] text-slate-500 mt-0.5"></div></div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Monthly Income</div><div id="kpi-income" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">₹85,000</div></div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Monthly Spend</div><div id="kpi-spend" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">₹54,155</div><div id="kpi-spend-sub" class="text-[11px] text-slate-400 mt-0.5"></div></div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Net Surplus</div><div id="kpi-surplus" class="text-xl sm:text-2xl font-extrabold text-teal-700 mt-1">₹30,845</div><div id="kpi-savings-rate" class="text-[11px] text-slate-500 mt-0.5"></div></div>
             <div class="bg-white rounded-2xl p-4 border border-slate-200"><div class="text-xs text-slate-500 font-medium">Emergency Runway</div><div id="kpi-runway" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">0 mo</div><div class="w-full bg-slate-100 h-1.5 rounded-full mt-2"><div id="kpi-runway-bar" class="bg-teal-600 h-full rounded-full" style="width:0%"></div></div></div>
           </div>
           <div class="bg-white rounded-2xl p-4 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -160,7 +161,7 @@
               <div class="flex justify-between items-center"><h3 class="text-sm font-bold">Messy PDF / CSV / UPI SMS Ingest</h3><button id="load-sample-sms-btn" type="button" class="px-3 py-1 rounded-lg text-xs font-semibold bg-teal-50 text-teal-800 hover:bg-teal-100">+ Sample SMS</button></div>
               <textarea id="messy-input" rows="4" placeholder="Paste bank/UPI SMS, CSV rows, or upload a text-based PDF..." class="w-full p-3 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600"></textarea>
               <div class="flex flex-wrap justify-between gap-2">
-                <label class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">Upload PDF / CSV / TXT<input id="csv-file-input" type="file" accept=".pdf,.csv,.txt" class="hidden" /></label>
+                <label class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">Upload Bank CSV / Text PDF<input id="csv-file-input" type="file" accept=".pdf,.csv,.txt" class="hidden" /></label>
                 <button id="parse-ingest-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white">Parse &amp; Auto-Categorize</button>
               </div>
             </div>
