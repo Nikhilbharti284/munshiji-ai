@@ -20,7 +20,7 @@
   }
   function switchTab(t) {
     if (!TITLES[t]) t = 'overview';
-    if (location.hash !== '#/' + t) history.replaceState(null, '', '#/' + t);
+    if (location.hash !== '#/' + t) history.replaceState(null, '', location.pathname + location.search + '#/' + t);
     $('page-title').textContent = TITLES[t];
     document.querySelectorAll('.nav-item, .mob-nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + t));
@@ -140,6 +140,7 @@
     if (MJ.renderCategoryBars) MJ.renderCategoryBars(fin);
     if (MJ.renderGoalRings) MJ.renderGoalRings(state, () => { MJ.saveState(state); renderAll(); }, toast);
     if (MJ.renderProjectionChart) MJ.renderProjectionChart(state, fin, deltaMo);
+    if ($('load-sample-bar-btn') && $('clear-sample-btn')) { const emp = !state.transactions.length; $('load-sample-bar-btn').classList.toggle('hidden', !emp); $('clear-sample-btn').classList.toggle('hidden', emp); if ($('sample-data-bar')) $('sample-data-bar').classList.remove('hidden'); }
     if ($('free-tier-pill')) { $('free-tier-pill').textContent = state.isPro ? 'Pro Unlimited' : (state.transactions.length + '/25 Free'); }
     if ($('buy-pro-link') && MJ.BRAND) { $('buy-pro-link').href = MJ.BRAND.checkoutUrl || 'https://gumroad.com/'; if (MJ.BRAND.coachName || state.isPro) $('buy-pro-link').classList.add('hidden'); }
     if (MJ.getSpendDNA && $('dna-title')) { const dna = MJ.getSpendDNA(fin, subs); $('dna-title').textContent = dna.title; $('dna-desc').textContent = dna.desc; $('dna-tag').textContent = dna.tag; }
@@ -158,7 +159,7 @@
 
   document.querySelectorAll('.nav-item, .mob-nav-item').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
   window.addEventListener('hashchange', () => switchTab(location.hash.replace('#/', '') || 'overview'));
-  $('judge-tour-btn').addEventListener('click', () => $('judge-tour-banner').classList.toggle('hidden'));
+  $('judge-tour-btn').addEventListener('click', () => { if (!state.transactions.length) { state = MJ.defaultState(); MJ.saveState(state); renderAll(); toast('Sample HDFC data auto-loaded for tour!'); } $('judge-tour-banner').classList.toggle('hidden'); });
   $('close-tour-btn').addEventListener('click', () => $('judge-tour-banner').classList.add('hidden'));
   document.querySelectorAll('.tour-step-btn').forEach(b => b.addEventListener('click', () => {
     const s = b.dataset.tourStep;
@@ -310,5 +311,6 @@
     $('imp-result').innerHTML = '<div class="flex flex-wrap justify-between items-center gap-1 mb-1.5"><b>' + MJ.esc(r.item) + ' (' + MJ.fmtINR(r.amt) + ')</b><span class="px-2 py-0.5 rounded-full border text-[11px] font-bold ' + r.verdict.cls + '">' + r.verdict.label + '</span></div><div class="grid grid-cols-3 gap-2 text-center pt-1"><div class="p-2 rounded-lg bg-white border"><b>' + r.hours + ' hrs</b><br><span class="text-[11px] text-slate-500">' + r.workdays + ' workdays</span></div><div class="p-2 rounded-lg bg-white border"><b>' + MJ.fmtINR(r.opp10yr) + '</b><br><span class="text-[11px] text-slate-500">10-yr cost</span></div><div class="p-2 rounded-lg bg-white border"><b>+' + r.goalDelayMo + ' mo</b><br><span class="text-[11px] text-slate-500">goal delay</span></div></div>';
   });
   if ($('download-dna-btn')) $('download-dna-btn').addEventListener('click', () => { MJ.downloadDNACard(MJ.computeFinancials(state), MJ.detectSubs(state)); toast('Privacy-Safe Money DNA Card downloaded!', 'indigo'); });
+  if ($('load-sample-bar-btn')) $('load-sample-bar-btn').addEventListener('click', () => { state = MJ.defaultState(); MJ.saveState(state); renderAll(); toast('Sample HDFC data loaded!'); });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();
