@@ -14,7 +14,7 @@ MJ.BRAND = {
 (function () {
   try {
     const q = new URLSearchParams(window.location.search);
-    if (q.get('coach')) { MJ.BRAND.brandName = q.get('coach').slice(0, 32); MJ.BRAND.coachName = MJ.BRAND.brandName; MJ.BRAND.tagline = 'Client Financial Planner (SEBI-Safe)'; }
+    if (q.get('coach')) { MJ.BRAND.brandName = q.get('coach').slice(0, 32); MJ.BRAND.coachName = MJ.BRAND.brandName; MJ.BRAND.tagline = 'Client Financial Planner (Stock-tip guardrail (not investment advice))'; }
     if (q.get('color') && /^[0-9a-fA-F]{6}$/.test(q.get('color'))) MJ.BRAND.primaryHex = '#' + q.get('color');
     if (q.get('currency') === 'USD') { MJ.BRAND.currency = 'USD'; MJ.BRAND.logoSymbol = '$'; }
     document.documentElement.style.setProperty('--brand', MJ.BRAND.primaryHex);

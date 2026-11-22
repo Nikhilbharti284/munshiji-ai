@@ -129,7 +129,7 @@ MJ.parseVoice = function (state, whatIf, rawText) {
 MJ.coachReply = async function (state, q) {
   const fin = MJ.computeFinancials(state);
   if (MJ.GUARDRAIL_RE.test(q)) {
-    return { type: 'guardrail', text: 'SEBI-Safe Guardrail Triggered: I am an educational money coach, not a SEBI-registered advisor, so I cannot recommend specific stocks, mutual funds, crypto, or F&O trades. Your current emergency runway is ' + fin.runwayMonths + ' months (vs 6-month target) — prioritize completing your liquid buffer first, then study diversified asset allocation.' };
+    return { type: 'guardrail', text: 'Stock-tip guardrail triggered (not investment advice): I am an educational money coach, not a SEBI-registered advisor, so I cannot recommend specific stocks, mutual funds, crypto, or F&O trades. Your current emergency runway is ' + fin.runwayMonths + ' months (vs 6-month target) — prioritize completing your liquid buffer first, then study diversified asset allocation.' };
   }
   if (state.apiKey && MJ.callLLM) {
     const liveText = await MJ.callLLM(state.apiKey, 'You are MunshiJi AI, a crisp English personal finance educator. Reply in 2-3 sentences. NEVER recommend specific stocks, funds, or crypto. Income ' + MJ.fmtINR(fin.income) + ', Spend ' + MJ.fmtINR(fin.totalSpend) + ', Surplus ' + MJ.fmtINR(fin.surplus) + '. Question: ' + q);

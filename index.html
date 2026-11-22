@@ -24,7 +24,8 @@
         <button id="close-settings-btn" type="button" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500">✕</button>
       </div>
       <div id="api-key-block" class="space-y-2"><p class="text-xs text-slate-500 leading-relaxed">Runs 100% free with zero API keys using our deterministic financial engine. Optionally add a free Gemini API key for extended Q&amp;A.</p>
-      <input id="api-key-input" type="password" placeholder="AIza... (Gemini) or gsk_... (Groq)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600" /><p class="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5"><strong>Privacy Note:</strong> Core ledger, CSV/PDF parsing, and .enc vault run 100% offline. Adding an optional Gemini/Groq key sends only your Coach Q&amp;A prompt to Google/Groq.</p></div>
+      <input id="api-key-input" type="password" placeholder="AIza... (Gemini) or gsk_... (Groq)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600" />
+      <p id="ai-privacy-note" class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-1">Core ledger, CSV/PDF parsing and the .enc vault run 100% offline. Adding an optional Gemini/Groq key sends only your Coach Q&amp;A text to Google/Groq.</p><p class="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5"><strong>Privacy Note:</strong> Core ledger, CSV/PDF parsing, and .enc vault run 100% offline. Adding an optional Gemini/Groq key sends only your Coach Q&amp;A prompt to Google/Groq.</p></div>
       <div class="pt-3 border-t border-slate-100 space-y-2">
         <div class="text-xs font-bold text-slate-800">Encrypted Local Vault (AES-GCM-256)</div>
         <input id="vault-pw-input" type="password" placeholder="Vault password..." class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl" />
@@ -119,7 +120,7 @@
         <section class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3 no-print">
           <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span class="font-semibold text-slate-700 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-teal-600"></span> Voice &amp; Wispr Flow Command Bar</span>
-            <div class="flex items-center gap-2"><button id="tts-toggle-btn" type="button" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Voice Reply: OFF</button><span class="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">SEBI-Safe Guardrails On</span></div>
+            <div class="flex items-center gap-2"><button id="tts-toggle-btn" type="button" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Voice Reply: OFF</button><span class="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">Stock-tip guardrail (not investment advice)</span></div>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
             <div class="relative flex-1">
@@ -256,7 +257,7 @@
             <div class="pt-2 border-t border-slate-100"><h4 class="text-xs font-bold uppercase text-slate-400 mb-1.5">Memory &amp; Guardrail Log</h4><div id="memory-activity-log" class="space-y-1.5 text-xs max-h-40 overflow-y-auto"></div></div>
           </div>
           <div class="lg:col-span-5 bg-white rounded-2xl p-4 border border-slate-200 flex flex-col no-print space-y-2.5">
-            <div class="flex justify-between items-center"><h3 class="text-sm font-bold">Financial Coach</h3><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800">SEBI-Safe</span></div>
+            <div class="flex justify-between items-center"><h3 class="text-sm font-bold">Financial Coach</h3><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800">Stock-tip guardrail (not investment advice)</span></div>
             <div id="coach-chat-log" class="flex-1 space-y-2 overflow-y-auto max-h-72"></div>
             <div class="flex flex-wrap gap-1.5">
               <button type="button" data-coach-q="Should I invest ₹50,000 in Tata Motors or Bitcoin?" class="coach-quick-btn text-[11px] px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700">Test Guardrail</button>
@@ -266,6 +267,7 @@
           </div>
         </section>
       </main>
+      <footer class="max-w-5xl w-full mx-auto px-4 pb-24 md:pb-6 pt-2 text-center text-xs text-slate-500">Educational tool. Not SEBI-registered investment advice.</footer>
     </div>
   </div>
 

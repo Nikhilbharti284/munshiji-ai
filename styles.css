@@ -64,3 +64,6 @@ body.dark-pro #page-title, body.dark-pro h1, body.dark-pro h3, body.dark-pro #kp
 .token-filler { text-decoration: line-through; color: #D92D20; opacity: .8; }
 .token-corrected { background: #EBF6FC; color: #00205C; padding: 0 5px; border-radius: 4px; font-weight: 700; }
 @media print { .no-print { display: none !important; } body { background: #FFF !important; color: #000 !important; } }
+
+html, body { max-width: 100vw; overflow-x: hidden !important; }
+.overflow-x-auto { max-width: 100%; -webkit-overflow-scrolling: touch; }

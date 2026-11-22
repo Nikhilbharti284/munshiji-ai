@@ -18,9 +18,14 @@
     state.activityLog.unshift({ time: new Date().toTimeString().slice(0, 5), badge, text });
     if (state.activityLog.length > 20) state.activityLog.pop();
   }
-  function switchTab(t) {
+  function switchTab(t, fromHash) {
+    if (t === 'subs') t = 'subscriptions';
     if (!TITLES[t]) t = 'overview';
-    if (location.hash !== '#/' + t) history.replaceState(null, '', location.pathname + location.search + '#/' + t);
+    const hashSlug = t === 'subscriptions' ? 'subs' : t;
+    const targetHash = '#/' + hashSlug;
+    if (!fromHash && location.hash !== targetHash) {
+      history.pushState({ tab: t }, '', location.pathname + location.search + targetHash);
+    }
     $('page-title').textContent = TITLES[t];
     document.querySelectorAll('.nav-item, .mob-nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + t));
@@ -154,11 +159,13 @@
     logAct('VOICE', p.intent + ': ' + p.summary);
     if (p.intent === 'WHAT_IF_SIMULATION') { Object.assign(whatIf, p.params); MJ.saveState(state); switchTab('whatif'); toast('What-If Simulator updated!'); if (MJ.speak) MJ.speak(p.summary); }
     else if (p.intent === 'LOG_TRANSACTION') { state.transactions.unshift(p.tx); MJ.saveState(state); switchTab('ingest'); toast('Logged ' + MJ.fmtINR(p.tx.amount)); }
-    else { state.chatLog.push({ role: 'user', text: p.original }); const r = await MJ.coachReply(state, p.original); state.chatLog.push({ role: 'coach', type: r.type, text: r.text }); MJ.saveState(state); switchTab('report'); toast(r.type === 'guardrail' ? 'SEBI-Safe Guardrail triggered!' : 'Coach replied!', r.type === 'guardrail' ? 'indigo' : 'normal'); }
+    else { state.chatLog.push({ role: 'user', text: p.original }); const r = await MJ.coachReply(state, p.original); state.chatLog.push({ role: 'coach', type: r.type, text: r.text }); MJ.saveState(state); switchTab('report'); toast(r.type === 'guardrail' ? 'Stock-tip guardrail triggered (not investment advice)' : 'Coach replied!', r.type === 'guardrail' ? 'indigo' : 'normal'); }
   }
 
   document.querySelectorAll('.nav-item, .mob-nav-item').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
-  window.addEventListener('hashchange', () => switchTab(location.hash.replace('#/', '') || 'overview'));
+  const syncFromHash = () => switchTab(location.hash.replace(/^#\/?/, '') || 'overview', true);
+  window.addEventListener('hashchange', syncFromHash);
+  window.addEventListener('popstate', syncFromHash);
   $('judge-tour-btn').addEventListener('click', () => { if (!state.transactions.length) { state = MJ.defaultState(); MJ.saveState(state); renderAll(); toast('Sample HDFC data auto-loaded for tour!'); } $('judge-tour-banner').classList.toggle('hidden'); });
   $('close-tour-btn').addEventListener('click', () => $('judge-tour-banner').classList.add('hidden'));
   document.querySelectorAll('.tour-step-btn').forEach(b => b.addEventListener('click', () => {
@@ -212,9 +219,9 @@
         const pdf = await window.pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
         let txt = ''; for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { const pg = await pdf.getPage(i); txt += (await pg.getTextContent()).items.map(x => x.str).join(' ') + '\n'; }
         $('messy-input').value = txt.trim(); return toast('Extracted text from PDF — click Parse!');
-      } catch (err) { return toast('Could not read scanned/encrypted PDF — paste text or CSV.', 'error'); }
+      } catch (err) { return toast("Couldn't read this file, try CSV", 'error'); }
     }
-    const r = new FileReader(); r.onload = () => { $('messy-input').value = String(r.result || ''); toast('Loaded ' + f.name + ' — click Parse!'); }; r.readAsText(f);
+    try { const r = new FileReader(); r.onerror = () => toast("Couldn't read this file, try CSV", 'error'); r.onload = () => { const txt = String(r.result || '').trim(); if (!txt) return toast("Couldn't read this file, try CSV", 'error'); $('messy-input').value = txt; toast('Loaded ' + f.name + ' — click Parse!'); }; r.readAsText(f); } catch (err) { toast("Couldn't read this file, try CSV", 'error'); }
   });
   $('ledger-search').addEventListener('input', renderAll); $('ledger-cat-filter').addEventListener('change', renderAll);
   $('ledger-tbody').addEventListener('change', e => {
