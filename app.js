@@ -100,7 +100,7 @@
     $('rules-count-badge').textContent = String(rKeys.length);
     $('learned-rules-list').innerHTML = rKeys.length ? rKeys.map(k => '<div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs"><div><div class="font-bold text-slate-900">' + MJ.esc(k) + '</div><div class="text-[11px] text-teal-700">&rarr; ' + MJ.esc(state.learnedRules[k]) + '</div></div><button type="button" data-del-rule="' + MJ.esc(k) + '" class="del-rule-btn text-slate-400 hover:text-rose-600 px-1.5">✕</button></div>').join('') : '<div class="text-xs text-slate-400 italic">Edit any category below to teach MunshiJi.</div>';
     const sq = ($('ledger-search').value || '').toLowerCase(), cf = selF.value;
-    $('ledger-tbody').innerHTML = state.transactions.filter(t => (cf === 'ALL' || t.category === cf) && (!sq || t.merchant.toLowerCase().includes(sq))).sort((a, b) => b.date.localeCompare(a.date)).map(t => '<tr><td class="py-2.5 pr-3 text-slate-500 whitespace-nowrap">' + MJ.esc(t.date) + '</td><td class="py-2.5 pr-3"><div class="font-semibold text-slate-900">' + MJ.esc(t.merchant) + '</div><div class="text-[10px] text-slate-400 truncate max-w-[160px]">' + MJ.esc(t.raw) + '</div></td><td class="py-2.5 pr-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium">' + MJ.esc(t.source) + '</span></td><td class="py-2.5 pr-3"><select data-tx-id="' + MJ.esc(t.id) + '" class="tx-cat-select text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white">' + MJ.CATEGORIES.map(c => '<option value="' + c + '"' + (c === t.category ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></td><td class="py-2.5 text-right font-bold text-slate-900 whitespace-nowrap">' + MJ.fmtINR(t.amount) + '</td></tr>').join('');
+    $('ledger-tbody').innerHTML = state.transactions.filter(t => (cf === 'ALL' || t.category === cf) && (!sq || t.merchant.toLowerCase().includes(sq))).sort((a, b) => b.date.localeCompare(a.date)).map(t => '<tr><td class="py-2.5 pr-3 text-slate-500 whitespace-nowrap">' + MJ.esc(t.date) + '</td><td class="py-2.5 pr-3"><div class="font-semibold text-slate-900">' + MJ.esc(t.merchant) + '</div><div class="text-[10px] text-slate-400 truncate max-w-[160px]">' + MJ.esc(t.raw) + '</div></td><td class="py-2.5 pr-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium">' + MJ.esc(t.source) + '</span></td><td class="py-2.5 pr-3"><select data-tx-id="' + MJ.esc(t.id) + '" class="tx-cat-select text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white">' + MJ.CATEGORIES.map(c => '<option value="' + c + '"' + (c === t.category ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></td><td class="py-2.5 text-right font-bold text-slate-900 whitespace-nowrap">' + MJ.fmtINR(t.amount) + ' <button type="button" data-del-tx="' + MJ.esc(t.id) + '" class="del-tx-btn ml-1.5 text-slate-300 hover:text-rose-600" title="Delete">✕</button></td></tr>').join('');
 
     $('sub-total-monthly').textContent = MJ.fmtINR(subs.reduce((a, s) => a + s.latestAmt, 0));
     $('sub-alerts-count').textContent = alertCnt;
@@ -140,6 +140,8 @@
     if (MJ.renderCategoryBars) MJ.renderCategoryBars(fin);
     if (MJ.renderGoalRings) MJ.renderGoalRings(state, () => { MJ.saveState(state); renderAll(); }, toast);
     if (MJ.renderProjectionChart) MJ.renderProjectionChart(state, fin, deltaMo);
+    if ($('free-tier-pill')) { $('free-tier-pill').textContent = state.isPro ? 'Pro Unlimited' : (state.transactions.length + '/25 Free'); }
+    if ($('buy-pro-link') && MJ.BRAND) { $('buy-pro-link').href = MJ.BRAND.checkoutUrl || 'https://gumroad.com/'; if (MJ.BRAND.coachName || state.isPro) $('buy-pro-link').classList.add('hidden'); }
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -291,5 +293,15 @@
     toast(r.note, r.valid ? 'indigo' : 'error');
   });
   if ($('clear-sample-btn')) $('clear-sample-btn').addEventListener('click', () => { state.transactions = []; MJ.saveState(state); if ($('sample-data-bar')) $('sample-data-bar').classList.add('hidden'); switchTab('ingest'); toast('Cleared sample data — upload your bank CSV or SMS!'); });
+  $('ledger-tbody').addEventListener('click', e => {
+    const b = e.target.closest('.del-tx-btn'); if (!b) return;
+    state.transactions = state.transactions.filter(t => t.id !== b.dataset.delTx);
+    MJ.saveState(state); renderAll(); toast('Transaction deleted');
+  });
+  if ($('export-csv-btn')) $('export-csv-btn').addEventListener('click', () => {
+    const rows = [['Date','Merchant','Category','Source','Amount']].concat(state.transactions.map(t => [t.date, '"' + String(t.merchant).replace(/"/g,'""') + '"', t.category, t.source, t.amount]));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' })); a.download = 'munshiji_categorized_ledger.csv'; a.click();
+    toast('Categorized CSV exported!');
+  });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();

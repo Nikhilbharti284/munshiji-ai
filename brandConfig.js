@@ -8,6 +8,7 @@ MJ.BRAND = {
   coachName: '',
   gumroadProductId: '', // Paste Gumroad Product ID when live
   lemonSqueezy: false,
+  checkoutUrl: 'https://gumroad.com/', // Paste your live Gumroad/LemonSqueezy checkout link here
   sebiDisclaimer: 'Educational money modeling only — not a SEBI-registered investment advisor.'
 };
 (function () {
