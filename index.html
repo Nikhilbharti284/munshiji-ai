@@ -153,6 +153,31 @@
             <div id="nudges-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
           </div>
           <div class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3"><h3 class="text-sm font-bold text-slate-900">Category Budget Pulse</h3><div id="category-pulse-bars" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div></div>
+          
+          <!-- v8.0 Unique Section: Life-Hours Impulse Gate + Shareable Money DNA Card -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div id="impulse-widget" class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
+              <div><span class="text-[11px] font-bold uppercase text-teal-700">Life-Hours Price Tag</span><h3 class="text-sm font-bold">Should I Buy This? (Impulse Gate)</h3></div>
+              <div class="grid grid-cols-12 gap-2">
+                <input id="imp-item" type="text" placeholder="Item (e.g. Sneakers)" class="col-span-6 px-3 py-2 text-xs border border-slate-200 rounded-xl" />
+                <input id="imp-price" type="number" min="1" placeholder="Price" class="col-span-3 px-2.5 py-2 text-xs border border-slate-200 rounded-xl" />
+                <button id="imp-calc-btn" type="button" class="col-span-3 py-2 rounded-xl bg-teal-700 text-white text-xs font-bold">Check</button>
+              </div>
+              <div id="imp-result" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">Enter any purchase above to see its true cost in <b>Hours of Your Life</b> and <b>10-Year Lost Wealth</b>.</div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 flex flex-col justify-between gap-3">
+              <div>
+                <div class="flex justify-between items-center"><span class="text-[11px] font-bold uppercase text-teal-700">Spend Personality DNA</span><span id="dna-tag" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800">Live</span></div>
+                <h3 id="dna-title" class="text-lg font-extrabold mt-1">Analyzing...</h3>
+                <p id="dna-desc" class="text-xs text-slate-600 mt-1"></p>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                <span class="text-[11px] font-semibold text-slate-500">0 Bytes Cloud Upload &bull; 100% Local</span>
+                <button id="download-dna-btn" type="button" class="px-3.5 py-2 rounded-xl bg-teal-700 text-white text-xs font-bold whitespace-nowrap">Share DNA Card (PNG)</button>
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="bg-white rounded-2xl p-4 border border-slate-200"><h3 class="text-sm font-bold text-slate-900 mb-3">Spending by Category</h3><div class="relative h-60"><canvas id="category-chart"></canvas></div></div>
             <div class="bg-white rounded-2xl p-4 border border-slate-200"><h3 class="text-sm font-bold text-slate-900 mb-3">Monthly Cashflow</h3><div class="relative h-60"><canvas id="cashflow-chart"></canvas></div></div>
@@ -259,6 +284,7 @@
   <script src="power.js"></script>
   <script src="parsers.js"></script>
   <script src="vault.js"></script>
+  <script src="unique.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

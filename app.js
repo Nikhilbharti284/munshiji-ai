@@ -142,6 +142,7 @@
     if (MJ.renderProjectionChart) MJ.renderProjectionChart(state, fin, deltaMo);
     if ($('free-tier-pill')) { $('free-tier-pill').textContent = state.isPro ? 'Pro Unlimited' : (state.transactions.length + '/25 Free'); }
     if ($('buy-pro-link') && MJ.BRAND) { $('buy-pro-link').href = MJ.BRAND.checkoutUrl || 'https://gumroad.com/'; if (MJ.BRAND.coachName || state.isPro) $('buy-pro-link').classList.add('hidden'); }
+    if (MJ.getSpendDNA && $('dna-title')) { const dna = MJ.getSpendDNA(fin, subs); $('dna-title').textContent = dna.title; $('dna-desc').textContent = dna.desc; $('dna-tag').textContent = dna.tag; }
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -303,5 +304,11 @@
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' })); a.download = 'munshiji_categorized_ledger.csv'; a.click();
     toast('Categorized CSV exported!');
   });
+  if ($('imp-calc-btn')) $('imp-calc-btn').addEventListener('click', () => {
+    const r = MJ.calcImpulse(state, MJ.computeFinancials(state), $('imp-item').value.trim(), $('imp-price').value);
+    if (!r.amt) return toast('Enter a valid price!', 'error');
+    $('imp-result').innerHTML = '<div class="flex flex-wrap justify-between items-center gap-1 mb-1.5"><b>' + MJ.esc(r.item) + ' (' + MJ.fmtINR(r.amt) + ')</b><span class="px-2 py-0.5 rounded-full border text-[11px] font-bold ' + r.verdict.cls + '">' + r.verdict.label + '</span></div><div class="grid grid-cols-3 gap-2 text-center pt-1"><div class="p-2 rounded-lg bg-white border"><b>' + r.hours + ' hrs</b><br><span class="text-[11px] text-slate-500">' + r.workdays + ' workdays</span></div><div class="p-2 rounded-lg bg-white border"><b>' + MJ.fmtINR(r.opp10yr) + '</b><br><span class="text-[11px] text-slate-500">10-yr cost</span></div><div class="p-2 rounded-lg bg-white border"><b>+' + r.goalDelayMo + ' mo</b><br><span class="text-[11px] text-slate-500">goal delay</span></div></div>';
+  });
+  if ($('download-dna-btn')) $('download-dna-btn').addEventListener('click', () => { MJ.downloadDNACard(MJ.computeFinancials(state), MJ.detectSubs(state)); toast('Privacy-Safe Money DNA Card downloaded!', 'indigo'); });
   switchTab(location.hash.replace('#/', '') || 'overview');
 })();

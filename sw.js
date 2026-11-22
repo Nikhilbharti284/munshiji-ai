@@ -1,4 +1,4 @@
-const CACHE = 'munshiji-os-v7.7';
+const CACHE = 'munshiji-os-v8.0';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
